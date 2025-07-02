@@ -1,0 +1,191 @@
+name: CD - 릴리즈 및 배포
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed] # PR이 머지될 때만 작동
+
+jobs:
+  bump-version-and-release:
+    if: github.event.pull_request.merged == true
+    name: 버전 업데이트 및 릴리스 생성
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.split_and_bump.outputs.new_tag }}
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 최신 태그 가져오기
+        id: get_latest
+        run: |
+          git fetch --tags
+          TAG=$(git tag --sort=-v:refname | head -n 1)
+          if [[ -z "$TAG" ]]; then
+            TAG="v0.0.0"
+          fi
+          echo "LATEST_TAG=$TAG" >> $GITHUB_ENV
+
+      - name: 버전 업데이트 처리
+        id: split_and_bump
+        run: |
+          VERSION=${{ env.LATEST_TAG }}
+          VERSION="${VERSION#v}"
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+
+          LABELS_JSON='${{ toJson(github.event.pull_request.labels) }}'
+          LABEL_NAMES=$(echo "$LABELS_JSON" | jq -r '.[].name')
+
+          VERSION_TYPE=""
+          for label in $LABEL_NAMES; do
+            if [[ "$label" == "major" ]]; then
+              VERSION_TYPE="major"
+            elif [[ "$label" == "minor" ]]; then
+              VERSION_TYPE="minor"
+            elif [[ "$label" == "patch" ]]; then
+              VERSION_TYPE="patch"
+            fi
+          done
+
+          if [[ -z "$VERSION_TYPE" ]]; then
+            echo "❌ 유효한 버전 라벨이 없습니다."
+            exit 1
+          fi
+
+          case $VERSION_TYPE in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Git 태그 생성 및 푸시
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git tag ${{ env.NEW_TAG }}
+          git push origin ${{ env.NEW_TAG }}
+
+      - name: 릴리스 제목용 PROJECT_NAME 대문자 변환
+        id: project_name_upper
+        run: |
+          echo "PROJECT_NAME_UPPER=$(echo '${{ vars.PROJECT_NAME }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
+
+      - name: GitHub 릴리스 생성
+        uses: softprops/action-gh-release@v2.2.2
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          name: ${{ env.PROJECT_NAME_UPPER }} ${{ env.NEW_TAG }}
+          body: |
+            🔖 PR 번호: #${{ github.event.pull_request.number }}
+            🔧 작성자: @${{ github.event.pull_request.user.login }}
+            📝 변경사항: ${{ github.event.pull_request.title }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-image-and-push:
+    name: 도커 이미지 빌드와 푸시
+    needs: bump-version-and-release
+    runs-on: ubuntu-latest
+    outputs:
+      DOCKER_IMAGE_NAME: ${{ steps.set-vars.outputs.docker_image_name }}
+      OWNER_LC: ${{ steps.set-vars.outputs.owner_lc }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 변수 설정
+        id: set-vars
+        run: |
+          echo "DOCKER_IMAGE_NAME=${{ vars.PROJECT_NAME }}-app" >> $GITHUB_ENV
+          echo "OWNER_LC=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "::set-output name=docker_image_name::${{ vars.PROJECT_NAME }}-app"
+          echo "::set-output name=owner_lc::$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+
+      - name: .env 파일 생성
+        env:
+          ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
+        run: echo "$ENV_FILE_CONTENT" > .env
+
+      - name: Docker Buildx 설치
+        uses: docker/setup-buildx-action@v3
+
+      - name: GHCR 로그인
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 빌드 및 푸시
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          cache-from: type=registry,ref=ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:cache
+          cache-to: type=registry,ref=ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:cache,mode=max
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.bump-version-and-release.outputs.tag_name }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+
+  deploy:
+    name: 배포
+    runs-on: ubuntu-latest
+    needs: build-image-and-push
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      DOCKER_IMAGE_NAME: ${{ needs.build-image-and-push.outputs.DOCKER_IMAGE_NAME }}
+      OWNER_LC: ${{ needs.build-image-and-push.outputs.OWNER_LC }}
+
+    steps:
+      - name: AWS 로그인 (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}
+          aws-region: ap-northeast-2
+
+      - name: EC2 인스턴스 ID 가져오기
+        id: get_instance_ids
+        run: |
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Role,Values=app-server" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].InstanceId" --output text)
+          echo "INSTANCE_IDS=$INSTANCE_IDS"
+          echo "INSTANCE_IDS=$INSTANCE_IDS" >> $GITHUB_ENV
+
+      - name: SSM 명령으로 블루-그린 배포 실행
+        run: |
+          for ID in $INSTANCE_IDS; do
+            aws ssm send-command \
+              --instance-ids "$ID" \
+              --document-name "AWS-RunShellScript" \
+              --comment "Blue-Green Deploy with health check" \
+              --region ap-northeast-2 \
+              --parameters commands='[
+                "set -e",
+                "CURRENT_PORT=$(docker ps --filter \\\"name=app1\\\" --format '\''{{.Ports}}'\'' | grep -q 8080 && echo 8080 || echo 8081)",
+                "if [ \\\"$CURRENT_PORT\\\" = \\\"8080\\\" ]; then NEXT_PORT=8081; else NEXT_PORT=8080; fi",
+                "CURRENT_APP=app$( [ \\\"$CURRENT_PORT\\\" = \\\"8080\\\" ] && echo 1 || echo 2 )",
+                "NEXT_APP=app$( [ \\\"$NEXT_PORT\\\" = \\\"8080\\\" ] && echo 1 || echo 2 )",
+                "docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
+                "docker run -d --network common --name $NEXT_APP -p $NEXT_PORT:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
+                "for i in $(seq 1 10); do",
+                "  sleep 1",
+                "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o '\''UP'\'' || true)",
+                "  if [ \\\"$STATUS\\\" = \\\"UP\\\" ]; then echo \\\"✅ Health check success\\\"; break; fi",
+                "  if [ $i -eq 10 ]; then echo \\\"❌ Health check failed\\\"; docker stop $NEXT_APP && docker rm $NEXT_APP; exit 1; fi",
+                "done",
+                "docker stop $CURRENT_APP || true",
+                "docker rm $CURRENT_APP || true",
+                "docker rmi $(docker images -f '\''dangling=true'\'' -q) || true"
+              ]'
+          done
