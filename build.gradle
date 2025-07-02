@@ -1,0 +1,88 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
+}
+
+group = 'com.mysite'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    'com/mysite/sns1_server/Sns1ServerApplication.class' // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
+                    // 예시: 'com/example/demo/DemoApplication.class'
+                    // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'BUNDLE' // BUNDLE은 전체 애플리케이션을 의미
+
+            afterEvaluate {
+                classDirectories.setFrom(files(classDirectories.files.collect {
+                    fileTree(dir: it, exclude: [
+                            'com/mysite/sns1_server/Sns1ServerApplication.class' // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
+                            // 예시: 'com/example/demo/DemoApplication.class'
+                            // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
+                    ])
+                }))
+            }
+
+            limit {
+                counter =  'INSTRUCTION' // INSTRUCTION은 명령어 커버리지 기준(바이트 코드)
+                value = 'COVEREDRATIO' // COVEREDRATIO는 커버리지 비율을 의미
+                minimum = 0.80 // 최소 커버리지 비율 설정
+            }
+            limit {
+                counter = 'LINE' // 라인 커버리지 기준
+                value = 'COVEREDRATIO'
+                minimum = 0.80
+            }
+        }
+    }
+}
