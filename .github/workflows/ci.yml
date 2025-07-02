@@ -1,0 +1,55 @@
+name: 빌드 및 테스트 (PR 검증 포함)
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main, dev]
+
+jobs:
+  verify-pr-source:
+    name: PR 출발 브랜치 검증
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'main' # main으로 향하는 PR만 검사
+    steps:
+      - name: PR 출발 브랜치가 dev 또는 hotfix/*인지 확인
+        run: |
+          echo "📌 PR base: ${{ github.event.pull_request.base.ref }}"
+          echo "📌 PR head: ${{ github.event.pull_request.head.ref }}"
+
+          HEAD_REF="${{ github.event.pull_request.head.ref }}"
+
+          if [[ "$HEAD_REF" == "dev" || "$HEAD_REF" == hotfix/* ]]; then
+            echo "✅ 허용된 브랜치입니다."
+          else
+            echo "❌ dev 또는 hotfix/* 브랜치에서만 main으로 PR을 보낼 수 있습니다."
+            exit 1
+          fi
+
+  build-test:
+    name: 빌드 및 테스트
+    runs-on: ubuntu-latest
+    needs: verify-pr-source
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run build and tests
+        run: ./gradlew clean build jacocoTestReport
