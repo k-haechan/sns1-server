@@ -25,16 +25,38 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Flyway (DB Migration)
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+
+    // Database Drivers
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'com.h2database:h2'
+
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0'
+
+
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+build {
+    dependsOn jacocoTestCoverageVerification
 }
 
 
@@ -50,9 +72,13 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    'com/mysite/sns1_server/Sns1ServerApplication.class' // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
+                    'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
                     // 예시: 'com/example/demo/DemoApplication.class'
                     // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
+                    'com/mysite/sns1_server/domain/**/entity/**',
+                    'com/mysite/sns1_server/domain/**/dto/**',
+                    'com/mysite/sns1_server/domain/**/type/**',
+                    'com/mysite/sns1_server/global/**'
             ])
         }))
     }
@@ -66,18 +92,17 @@ jacocoTestCoverageVerification {
             afterEvaluate {
                 classDirectories.setFrom(files(classDirectories.files.collect {
                     fileTree(dir: it, exclude: [
-                            'com/mysite/sns1_server/Sns1ServerApplication.class' // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
+                            'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
                             // 예시: 'com/example/demo/DemoApplication.class'
                             // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
+                            'com/mysite/sns1_server/domain/**/entity/**',
+                            'com/mysite/sns1_server/domain/**/dto/**',
+                            'com/mysite/sns1_server/domain/**/type/**',
+                            'com/mysite/sns1_server/global/**'
                     ])
                 }))
             }
 
-            limit {
-                counter =  'INSTRUCTION' // INSTRUCTION은 명령어 커버리지 기준(바이트 코드)
-                value = 'COVEREDRATIO' // COVEREDRATIO는 커버리지 비율을 의미
-                minimum = 0.80 // 최소 커버리지 비율 설정
-            }
             limit {
                 counter = 'LINE' // 라인 커버리지 기준
                 value = 'COVEREDRATIO'

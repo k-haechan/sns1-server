@@ -110,9 +110,8 @@ jobs:
           echo "::set-output name=owner_lc::$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
 
       - name: .env 파일 생성
-        env:
-          ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
-        run: echo "$ENV_FILE_CONTENT" > .env
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Docker Buildx 설치
         uses: docker/setup-buildx-action@v3
