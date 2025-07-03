@@ -38,6 +38,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: .env 파일 생성
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -52,4 +56,4 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run build and tests
-        run: ./gradlew clean build jacocoTestReport
+        run: ./gradlew clean build
