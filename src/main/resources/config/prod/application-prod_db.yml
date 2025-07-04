@@ -21,7 +21,11 @@ spring:
     locations:
       - classpath:db/migration
       - classpath:db/seed/dev
-
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 decorator:
   datasource:
     p6spy:
