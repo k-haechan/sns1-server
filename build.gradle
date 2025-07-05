@@ -65,10 +65,6 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-build {
-    dependsOn jacocoTestCoverageVerification
-}
-
 
 jacoco {
     toolVersion = '0.8.12'
@@ -79,45 +75,39 @@ jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
-                    // 예시: 'com/example/demo/DemoApplication.class'
-                    // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
-                    'com/mysite/sns1_server/domain/**/entity/**',
-                    'com/mysite/sns1_server/domain/**/dto/**',
-                    'com/mysite/sns1_server/domain/**/type/**',
-                    'com/mysite/sns1_server/global/**'
-            ])
-        }))
-    }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+                'com/mysite/sns1_server/Sns1ServerApplication.class',
+                'com/mysite/sns1_server/domain/**/entity/**',
+                'com/mysite/sns1_server/domain/**/dto/**',
+                'com/mysite/sns1_server/domain/**/type/**',
+                'com/mysite/sns1_server/global/**'
+        ])
+    }))
 }
 
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = 'BUNDLE' // BUNDLE은 전체 애플리케이션을 의미
-
-            afterEvaluate {
-                classDirectories.setFrom(files(classDirectories.files.collect {
-                    fileTree(dir: it, exclude: [
-                            'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
-                            // 예시: 'com/example/demo/DemoApplication.class'
-                            // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
-                            'com/mysite/sns1_server/domain/**/entity/**',
-                            'com/mysite/sns1_server/domain/**/dto/**',
-                            'com/mysite/sns1_server/domain/**/type/**',
-                            'com/mysite/sns1_server/global/**'
-                    ])
-                }))
-            }
-
+            element = 'BUNDLE'
             limit {
-                counter = 'LINE' // 라인 커버리지 기준
+                counter = 'LINE'
                 value = 'COVEREDRATIO'
                 minimum = 0.80
             }
         }
     }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+                'com/mysite/sns1_server/Sns1ServerApplication.class',
+                'com/mysite/sns1_server/domain/**/entity/**',
+                'com/mysite/sns1_server/domain/**/dto/**',
+                'com/mysite/sns1_server/domain/**/type/**',
+                'com/mysite/sns1_server/global/**'
+        ])
+    }))
+}
+
+tasks.named('build') {
+    dependsOn jacocoTestCoverageVerification
 }
