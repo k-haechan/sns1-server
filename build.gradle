@@ -58,6 +58,12 @@ dependencies {
     // SpringDoc OpenAPI Starter WebMVC UI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
+    // AWS SDK for S3
+    implementation 'software.amazon.awssdk:s3:2.31.77'
+
+    // AWS SDK for CloudFront (Signed URL/Cookie)
+    implementation 'software.amazon.awssdk:cloudfront:2.31.77'
+
 
 }
 
