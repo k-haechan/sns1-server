@@ -20,9 +20,6 @@ public class Member extends BaseEntity {
 	@Column(nullable = false, unique = true, length = 100)
 	private String email;
 
-	@Column(nullable = false, unique = true, length = 15)
-	private String phone;
-
 	@Column(length = 255)
 	private String profileImageUrl;
 
