@@ -24,17 +24,17 @@ import lombok.RequiredArgsConstructor;
 public class EmailController {
 	private final EmailService emailService;
 
-	@PostMapping("/code")
+	@PostMapping(value = "/code", consumes = "application/json")
 	@Operation(summary = "이메일 인증코드 전송", description = "이메일로 인증코드를 전송합니다.")
 	@ResponseStatus(HttpStatus.OK)
-	public CustomResponseBody<Void> sendCode(@Valid @RequestBody CodeRequest emailRequest) {
-		String email = emailRequest.email();
+	public CustomResponseBody<Void> sendCode(@Valid @RequestBody CodeRequest codeRequest) {
+		String email = codeRequest.email();
 		emailService.sendCode(email);
 
 		return CustomResponseBody.of("이메일 인증코드가 성공적으로 전송되었습니다.");
 	}
 
-	@PostMapping("/code/verify")
+	@PostMapping(value = "/code/verify", consumes = "application/json")
 	@Operation(summary = "인증코드 유효성 확인", description = "인증코드의 유효성을 확인합니다.")
 	@ResponseStatus(HttpStatus.OK)
 	public CustomResponseBody<Void> verifyCode(@Valid @RequestBody VerifyRequest verifyRequest) {

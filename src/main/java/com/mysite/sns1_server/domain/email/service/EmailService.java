@@ -1,7 +1,6 @@
 package com.mysite.sns1_server.domain.email.service;
 
 import java.security.SecureRandom;
-import java.time.Duration;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -85,7 +84,8 @@ public class EmailService {
 		if (cachedCode == null || !cachedCode.equals(code)) {
 			throw new CustomException(ErrorCode.EMAIL_VERIFY_FAILED);
 		}
+		redisService.delete(RedisKeyType.AUTH_EMAIL, email);
 
-		redisService.expire(RedisKeyType.AUTH_EMAIL, email, Duration.ofMinutes(10));
+		redisService.set(RedisKeyType.AUTH_EMAIL, email, code);
 	}
 }

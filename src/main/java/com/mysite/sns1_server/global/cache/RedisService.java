@@ -23,4 +23,12 @@ public class RedisService {
 	public void expire(RedisKeyType type, String param, Duration timeout) {
 		redisTemplate.expire(type.getKey(param), timeout);
 	}
+
+	public boolean hasKey(RedisKeyType type, String param) {
+		return redisTemplate.hasKey(type.getKey(param));
+	}
+
+	public void delete(RedisKeyType type, String param) {
+		redisTemplate.delete(type.getKey(param));
+	}
 }
