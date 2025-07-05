@@ -28,7 +28,6 @@ jobs:
   build-test:
     name: 빌드 및 테스트
     runs-on: ubuntu-latest
-    needs: verify-pr-source
     steps:
       - uses: actions/checkout@v4
 
