@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum RedisKeyType {
-	AUTH_EMAIL("auth:email:%s", Duration.ofMinutes(3)), // 인증용 전화번호 키, TTL 5분
+	AUTH_EMAIL("auth:email:%s", Duration.ofMinutes(3)), // 인증용 이메일 키, TTL 5분
+	VERIFIED_EMAIL("verified:email:%s", Duration.ofDays(30)), // 인증 완료된 이메일 키, TTL 30일
 	BLACKLIST("blacklist:%s", Duration.ofDays(7)); // 블랙리스트 키, TTL 30일
 
 	private final String keyPattern;

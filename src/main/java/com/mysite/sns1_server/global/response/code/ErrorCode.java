@@ -6,11 +6,17 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류"),
+	// General Server Error
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
 
-	// EMAIL DOMAIN
-	EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,  "이메일 전송 실패"),
-	EMAIL_VERIFY_FAILED(HttpStatus.BAD_REQUEST,  "이메일 인증 실패");
+	// Validation Errors
+	VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "유효성 검사에 실패했습니다. 입력값을 확인해주세요."),
+
+	// Email Domain Errors
+	EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다. 이메일 주소를 확인하거나 잠시 후 다시 시도해주세요."),
+	EMAIL_VERIFY_FAILED(HttpStatus.BAD_REQUEST, "이메일 인증에 실패했습니다. 인증 코드를 다시 확인해주세요."),
+	EMAIL_VERIFY_EXPIRED(HttpStatus.BAD_REQUEST, "이메일 인증 코드가 만료되었습니다. 새로운 인증 코드를 요청해주세요."),
+
 
 	private final HttpStatus status;
 	private final String message;
