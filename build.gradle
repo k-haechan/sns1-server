@@ -34,6 +34,12 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
 
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // SMTP Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // Database Drivers
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
@@ -46,17 +52,17 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // Sql Logging
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0'
+
+    // SpringDoc OpenAPI Starter WebMVC UI
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
 
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-build {
-    dependsOn jacocoTestCoverageVerification
 }
 
 
@@ -69,45 +75,39 @@ jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
-                    // 예시: 'com/example/demo/DemoApplication.class'
-                    // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
-                    'com/mysite/sns1_server/domain/**/entity/**',
-                    'com/mysite/sns1_server/domain/**/dto/**',
-                    'com/mysite/sns1_server/domain/**/type/**',
-                    'com/mysite/sns1_server/global/**'
-            ])
-        }))
-    }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+                'com/mysite/sns1_server/Sns1ServerApplication.class',
+                'com/mysite/sns1_server/domain/**/entity/**',
+                'com/mysite/sns1_server/domain/**/dto/**',
+                'com/mysite/sns1_server/domain/**/type/**',
+                'com/mysite/sns1_server/global/**'
+        ])
+    }))
 }
 
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = 'BUNDLE' // BUNDLE은 전체 애플리케이션을 의미
-
-            afterEvaluate {
-                classDirectories.setFrom(files(classDirectories.files.collect {
-                    fileTree(dir: it, exclude: [
-                            'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
-                            // 예시: 'com/example/demo/DemoApplication.class'
-                            // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
-                            'com/mysite/sns1_server/domain/**/entity/**',
-                            'com/mysite/sns1_server/domain/**/dto/**',
-                            'com/mysite/sns1_server/domain/**/type/**',
-                            'com/mysite/sns1_server/global/**'
-                    ])
-                }))
-            }
-
+            element = 'BUNDLE'
             limit {
-                counter = 'LINE' // 라인 커버리지 기준
+                counter = 'LINE'
                 value = 'COVEREDRATIO'
                 minimum = 0.80
             }
         }
     }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+                'com/mysite/sns1_server/Sns1ServerApplication.class',
+                'com/mysite/sns1_server/domain/**/entity/**',
+                'com/mysite/sns1_server/domain/**/dto/**',
+                'com/mysite/sns1_server/domain/**/type/**',
+                'com/mysite/sns1_server/global/**'
+        ])
+    }))
+}
+
+tasks.named('build') {
+    dependsOn jacocoTestCoverageVerification
 }
