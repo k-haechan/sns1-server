@@ -10,3 +10,11 @@ spring:
           auth: true
           starttls:
             enable: true
+custom:
+  jwt:
+    access-token:
+      expiration-time: 1h # 1hour
+      secret: ${JWT_ACCESS_TOKEN_SECRET_KEY}
+    refresh-token:
+      expiration-time: 30d # 30days
+      secret: ${JWT_REFRESH_TOKEN_SECRET_KEY}

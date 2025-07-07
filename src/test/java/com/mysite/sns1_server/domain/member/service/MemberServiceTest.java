@@ -3,6 +3,9 @@ package com.mysite.sns1_server.domain.member.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,7 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
@@ -30,6 +35,9 @@ class MemberServiceTest {
     @Mock
     private RedisService redisService;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private MemberService memberService;
 
@@ -39,7 +47,7 @@ class MemberServiceTest {
         // given
         JoinRequest joinRequest = new JoinRequest("testUser", "password", "테스트 유저", "test@example.com");
         when(redisService.hasKey(RedisKeyType.VERIFIED_EMAIL, joinRequest.email())).thenReturn(true);
-        when(memberRepository.save(any(Member.class))).thenReturn(joinRequest.toEntity());
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
         // when
         memberService.join(joinRequest);
@@ -101,5 +109,54 @@ class MemberServiceTest {
         assertThatThrownBy(() -> memberService.join(joinRequest))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.DATABASE_ERROR);
+    }
+
+    @DisplayName("login: 로그인 성공")
+    @Test
+    void loginSuccess() {
+        // given
+        LoginRequest loginRequest = new LoginRequest("test@example.com", "password");
+        Member member = mock(Member.class);
+        when(member.getId()).thenReturn(1L);
+        when(member.getPassword()).thenReturn("encodedPassword");
+
+        when(memberRepository.findByUsername(loginRequest.username())).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches(loginRequest.password(), member.getPassword())).thenReturn(true);
+
+        // when
+        Long memberId = memberService.login(loginRequest);
+
+        // then
+        assertThat(memberId).isEqualTo(member.getId());
+    }
+
+    @DisplayName("login: 로그인 실패 - 사용자 없음")
+    @Test
+    void loginFailure_memberNotFound() {
+        // given
+        LoginRequest loginRequest = new LoginRequest("nonexistentUser", "password");
+        when(memberRepository.findByUsername(loginRequest.username())).thenReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(() -> memberService.login(loginRequest))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @DisplayName("login: 로그인 실패 - 비밀번호 불일치")
+    @Test
+    void loginFailure_invalidPassword() {
+        // given
+        LoginRequest loginRequest = new LoginRequest("testUser", "wrongpassword");
+        Member member = mock(Member.class);
+        when(member.getPassword()).thenReturn("encodedPassword");
+
+        when(memberRepository.findByUsername(loginRequest.username())).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches(loginRequest.password(), member.getPassword())).thenReturn(false);
+
+        // when, then
+        assertThatThrownBy(() -> memberService.login(loginRequest))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_CREDENTIAL);
     }
 }

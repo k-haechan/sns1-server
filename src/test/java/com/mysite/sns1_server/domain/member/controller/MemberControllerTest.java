@@ -1,5 +1,6 @@
 package com.mysite.sns1_server.domain.member.controller;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -7,16 +8,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
 import com.mysite.sns1_server.domain.member.service.MemberService;
+import com.mysite.sns1_server.global.config.ServerConfig;
+import com.mysite.sns1_server.global.security.jwt.service.JwtService;
 
 @WebMvcTest(MemberController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class MemberControllerTest {
 
     @Autowired
@@ -24,6 +31,20 @@ class MemberControllerTest {
 
     @MockitoBean
     private MemberService memberService;
+
+    @MockitoBean
+    private PasswordEncoder passwordEncoder;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private ServerConfig serverConfig;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
+
+    
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -33,7 +54,7 @@ class MemberControllerTest {
     void t1() throws Exception {
         // given
         JoinRequest joinRequest = new JoinRequest("testUser", "password", "테스트 유저", "test@example.com");
-        doNothing().when(memberService).join(joinRequest);
+        doNothing().when(memberService).join(any(JoinRequest.class));
 
         // when, then
         mockMvc.perform(post("/api/v1/members/join")

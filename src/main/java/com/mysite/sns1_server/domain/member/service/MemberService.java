@@ -1,8 +1,10 @@
 package com.mysite.sns1_server.domain.member.service;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberService {
 	private final MemberRepository memberRepository;
 	private final RedisService redisService;
+	private final PasswordEncoder passwordEncoder;
 
 	public void join(JoinRequest request) {
 		String email = request.email();
@@ -26,7 +29,7 @@ public class MemberService {
 		}
 
 		try {
-			Member newMember = request.toEntity();
+			Member newMember = request.toEntity(passwordEncoder);
 			memberRepository.save(newMember);
 		} catch (DataIntegrityViolationException e) {
 			String message = e.getMessage();
@@ -40,5 +43,18 @@ public class MemberService {
 			throw new CustomException(ErrorCode.DATABASE_ERROR);
 		}
 
+	}
+
+	public Long login(LoginRequest request) {
+		String username = request.username();
+		String password = request.password();
+
+		Member member = memberRepository.findByUsername(username)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+		if (!passwordEncoder.matches(password, member.getPassword())) {
+			throw new CustomException(ErrorCode.BAD_CREDENTIAL);
+		}
+		return member.getId();
 	}
 }

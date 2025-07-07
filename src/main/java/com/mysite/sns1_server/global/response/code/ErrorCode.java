@@ -20,7 +20,14 @@ public enum ErrorCode {
 	// DB Errors
 	USERNAME_DUPLICATE(HttpStatus.CONFLICT, "이미 사용 중인 사용자 이름입니다."),
 	EMAIL_DUPLICATE(HttpStatus.CONFLICT, "이미 등록된 이메일 주소입니다."),
-	DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+	DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
+
+	// Authentication Errors
+	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED,"토큰이 만료되었습니다. 다시 로그인해주세요."),
+	INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다. 다시 로그인해주세요."),
+
+	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다. 회원 가입을 진행해주세요."),
+	BAD_CREDENTIAL(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다. 다시 시도해주세요."),;
 
 
 	private final HttpStatus status;

@@ -1,4 +1,4 @@
-package com.mysite.sns1_server.domain.email.dto.request;
+package com.mysite.sns1_server.domain.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
