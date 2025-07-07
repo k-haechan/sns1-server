@@ -1,0 +1,8 @@
+custom:
+  jwt:
+    access-token:
+      expiration-time: 1h # 1hour
+      secret: "your_secure_jwt_secret_key_2024_sns_service_spring_security_authentication_value_unique"
+    refresh-token:
+      expiration-time: 30d # 30days
+      secret: "your_secure_jwt_refresh_secret_key_2024_sns_service_spring_security_authentication_value_unique"

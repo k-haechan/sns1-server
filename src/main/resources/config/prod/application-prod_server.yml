@@ -1,0 +1,5 @@
+custom:
+  server:
+    frontend:
+      urls:
+        - ${FRONTEND_URL}

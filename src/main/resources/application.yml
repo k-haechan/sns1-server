@@ -10,6 +10,6 @@ spring:
         - optional:classpath:config/${spring.profiles.active}/application-${spring.profiles.active}_docs.yml
   profiles:
     group:
-        dev: [ "dev_db" ]
-        prod: [ "prod_db" ]
+        dev: [ "dev_db", "dev_server", "dev_auth" ]
+        prod: [ "prod_db", "prod_server", "prod_auth" ]
     active: dev

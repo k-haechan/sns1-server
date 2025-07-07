@@ -16,6 +16,10 @@ public class RedisService {
 		redisTemplate.opsForValue().set(type.getKey(param), value, type.getTtl());
 	}
 
+	public void set(RedisKeyType type, String param, Object value, Duration timeout) {
+		redisTemplate.opsForValue().set(type.getKey(param), value, timeout);
+	}
+
 	public Object get(RedisKeyType type, String param) {
 		return redisTemplate.opsForValue().get(type.getKey(param));
 	}

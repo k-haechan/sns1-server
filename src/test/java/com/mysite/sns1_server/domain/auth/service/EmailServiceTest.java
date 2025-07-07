@@ -1,11 +1,10 @@
-package com.mysite.sns1_server.domain.email.service;
+package com.mysite.sns1_server.domain.auth.service;
 
-import com.mysite.sns1_server.global.cache.RedisKeyType;
-import com.mysite.sns1_server.global.cache.RedisService;
-import com.mysite.sns1_server.global.exception.CustomException;
-import com.mysite.sns1_server.global.response.code.ErrorCode;
-import jakarta.mail.Session;
-import jakarta.mail.internet.MimeMessage;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,10 +13,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+
+import com.mysite.sns1_server.global.cache.RedisKeyType;
+import com.mysite.sns1_server.global.cache.RedisService;
+import com.mysite.sns1_server.global.exception.CustomException;
+import com.mysite.sns1_server.global.response.code.ErrorCode;
+
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
 @DisplayName("EmailService 단위 테스트")
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +33,9 @@ class EmailServiceTest {
 	@Mock
 	private RedisService redisService;
 
+	@Mock
+	private SpringTemplateEngine springTemplateEngine;
+
 	@InjectMocks
 	private EmailService emailService;
 
@@ -39,6 +46,7 @@ class EmailServiceTest {
 		String email = "test@example.com";
 		MimeMessage mimeMessage = new MimeMessage((Session) null);
 		when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
+		when(springTemplateEngine.process(anyString(), any(org.thymeleaf.context.Context.class))).thenReturn("<html>email content</html>");
 
 		// when
 		emailService.sendCode(email);
@@ -61,7 +69,7 @@ class EmailServiceTest {
 
 		// then
 		verify(redisService).delete(RedisKeyType.AUTH_EMAIL, email);
-		verify(redisService).set(RedisKeyType.AUTH_EMAIL, email, code);
+		verify(redisService).set(RedisKeyType.VERIFIED_EMAIL, email, code);
 	}
 
 	@DisplayName("verifyCode: 인증 코드 불일치 시 예외 발생")
@@ -100,7 +108,8 @@ class EmailServiceTest {
 		String email = "fail@example.com";
 		MimeMessage mimeMessage = new MimeMessage((Session) null);
 		when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
-		doThrow(new RuntimeException()).when(javaMailSender).send((MimeMessage)any());
+		when(springTemplateEngine.process(anyString(), any(org.thymeleaf.context.Context.class))).thenReturn("<html>email content</html>"); // Add this line
+		doThrow(new RuntimeException()).when(javaMailSender).send(any(MimeMessage.class));
 
 		// when, then
 		assertThatThrownBy(() -> emailService.sendCode(email))
