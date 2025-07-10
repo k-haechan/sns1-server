@@ -21,6 +21,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
 import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.MemberInfoResponse;
+import com.mysite.sns1_server.domain.member.dto.MemberResponse;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
 import com.mysite.sns1_server.global.cache.RedisKeyType;
@@ -168,5 +170,70 @@ class MemberServiceTest {
         assertThatThrownBy(() -> memberService.login(loginRequest))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_CREDENTIAL);
+    }
+
+    @DisplayName("getMemberInfo: 회원 정보 조회 성공")
+    @Test
+    void getMemberInfo_success() {
+        // given
+        Long memberId = 1L;
+        Member member = Member.builder()
+                .id(memberId)
+                .email("test@example.com")
+                .username("testUser")
+                .build();
+        when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
+
+        // when
+        MemberInfoResponse response = memberService.getMemberInfo(memberId);
+
+        // then
+        assertThat(response.id()).isEqualTo(memberId);
+        assertThat(response.username()).isEqualTo(member.getUsername());
+    }
+
+    @DisplayName("getMemberInfo: 회원 정보 조회 실패 - 사용자를 찾을 수 없음")
+    @Test
+    void getMemberInfo_memberNotFound() {
+        // given
+        Long memberId = 1L;
+        when(memberRepository.findById(memberId)).thenReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(() -> memberService.getMemberInfo(memberId))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @DisplayName("searchMemberByUsername: 회원 이름으로 검색 성공")
+    @Test
+    void searchMemberByUsername_success() {
+        // given
+        String username = "testUser";
+        Member member = Member.builder()
+                .id(1L)
+                .username(username)
+                .build();
+        when(memberRepository.findByUsername(username)).thenReturn(Optional.of(member));
+
+        // when
+        MemberResponse response = memberService.searchMemberByUsername(username);
+
+        // then
+        assertThat(response.id()).isEqualTo(member.getId());
+        assertThat(response.username()).isEqualTo(member.getUsername());
+    }
+
+    @DisplayName("searchMemberByUsername: 회원 이름으로 검색 실패 - 사용자를 찾을 수 없음")
+    @Test
+    void searchMemberByUsername_memberNotFound() {
+        // given
+        String username = "nonexistentUser";
+        when(memberRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(() -> memberService.searchMemberByUsername(username))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
     }
 }

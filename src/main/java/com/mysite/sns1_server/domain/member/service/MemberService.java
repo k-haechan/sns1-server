@@ -9,6 +9,8 @@ import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
 import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
 import com.mysite.sns1_server.domain.member.dto.response.MemberResponse;
+import com.mysite.sns1_server.domain.member.dto.MemberInfoResponse;
+import com.mysite.sns1_server.domain.member.dto.MemberResponse;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
 import com.mysite.sns1_server.global.cache.RedisKeyType;
@@ -65,6 +67,21 @@ public class MemberService {
 	public MemberResponse getMemberById(Long memberId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+		return MemberResponse.from(member);
+	}
+
+	public MemberInfoResponse getMemberInfo(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+		return MemberInfoResponse.from(member);
+
+	}
+
+	public MemberResponse searchMemberByUsername(String username) {
+		Member member = memberRepository.findByUsername(username)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
 		return MemberResponse.from(member);
 	}
 }
