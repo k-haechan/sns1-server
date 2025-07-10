@@ -1,9 +1,11 @@
 package com.mysite.sns1_server.global.security.jwt.filter;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		// 인증 객체 생성 및 SecurityContext에 저장
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 			memberId,
-			null
+			null,
+			List.of(new SimpleGrantedAuthority("ROLE_USER")) // 권한 추가!
 		);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}

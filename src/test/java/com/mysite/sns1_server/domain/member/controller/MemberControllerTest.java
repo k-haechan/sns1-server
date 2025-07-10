@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.MemberInfoResponse;
+import com.mysite.sns1_server.domain.member.dto.MemberResponse;
 import com.mysite.sns1_server.domain.member.service.MemberService;
 import com.mysite.sns1_server.global.config.ServerConfig;
 import com.mysite.sns1_server.global.security.jwt.service.JwtService;
@@ -74,5 +76,35 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(joinRequest)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @DisplayName("getMemberInfo: 회원 정보 조회 성공")
+    @Test
+    void getMemberInfo_success() throws Exception {
+        // given
+        Long memberId = 1L;
+        MemberInfoResponse memberInfoResponse = new MemberInfoResponse(memberId, "testUser", "profile.jpg", "intro", 10L, 20L);
+        when(memberService.getMemberInfo(memberId)).thenReturn(memberInfoResponse);
+
+        // when, then
+        mockMvc.perform(get("/api/v1/members/{memberId}", memberId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(memberId))
+                .andExpect(jsonPath("$.data.username").value("testUser"));
+    }
+
+    @DisplayName("searchMemberByName: 회원 이름으로 검색 성공")
+    @Test
+    void searchMemberByName_success() throws Exception {
+        // given
+        String username = "testUser";
+        MemberResponse memberResponse = new MemberResponse(1L, "testUser", "profile.jpg");
+        when(memberService.searchMemberByUsername(username)).thenReturn(memberResponse);
+
+        // when, then
+        mockMvc.perform(get("/api/v1/members").param("username", username))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(1L))
+                .andExpect(jsonPath("$.data.username").value("testUser"));
     }
 }
