@@ -172,7 +172,11 @@ class ScenarioIntegrationTest {
         var resultActions = mockMvc.perform(post("/api/v1/auth/login").with(anonymous())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("access-token"))
+                .andExpect(cookie().exists("refresh-token"))
+                .andExpect(jsonPath("$.data.username").value(username))
+                .andExpect(jsonPath("$.data.realName").value(realName));
 
         // 3. 로그아웃
         mockMvc.perform(post("/api/v1/auth/logout")

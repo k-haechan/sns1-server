@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mysite.sns1_server.common.util.CookieUtil;
 import com.mysite.sns1_server.domain.auth.dto.CodeRequest;
 import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
+import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
 import com.mysite.sns1_server.domain.auth.dto.VerifyRequest;
 import com.mysite.sns1_server.domain.auth.service.EmailService;
 import com.mysite.sns1_server.domain.member.service.MemberService;
@@ -42,14 +43,14 @@ public class AuthController {
 	@PostMapping( value = "/login", consumes = "application/json")
 	@Operation(summary = "로그인", description = "회원 정보를 기반으로 로그인합니다.")
 	@ResponseStatus(HttpStatus.OK)
-	public CustomResponseBody<Void> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-		Long memberId = memberService.login(request);
+	public CustomResponseBody<LoginResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+		LoginResponse loginResponse = memberService.login(request);
 
 		// 액세스 토큰 생성 및 쿠키 설정
 		CookieUtil.setCookie(
 			response,
 			accessTokenService.getTokenName(),
-			accessTokenService.generateToken(memberId),
+			accessTokenService.generateToken(loginResponse.memberId()),
 			accessTokenService.getExpiration()
 		);
 
@@ -57,11 +58,11 @@ public class AuthController {
 		CookieUtil.setCookie(
 			response,
 			refreshTokenService.getTokenName(),
-			refreshTokenService.generateToken(memberId),
+			refreshTokenService.generateToken(loginResponse.memberId()),
 			refreshTokenService.getExpiration()
 		);
 
-		return CustomResponseBody.of("로그인 성공, 토큰이 생성되었습니다.");
+		return CustomResponseBody.of("로그인 성공, 토큰이 생성되었습니다.", loginResponse);
 	}
 
 	@PostMapping(value = "logout")

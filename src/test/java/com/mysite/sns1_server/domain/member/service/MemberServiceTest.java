@@ -16,7 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
+import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
@@ -116,18 +119,25 @@ class MemberServiceTest {
     void loginSuccess() {
         // given
         LoginRequest loginRequest = new LoginRequest("test@example.com", "password");
-        Member member = mock(Member.class);
-        when(member.getId()).thenReturn(1L);
-        when(member.getPassword()).thenReturn("encodedPassword");
+        Member member = Member.builder()
+                .username("testuser")
+                .password("encodedPassword")
+                .realName("test")
+                .profileImageUrl("test.com")
+                .build();
+        ReflectionTestUtils.setField(member, "id", 1L);
 
         when(memberRepository.findByUsername(loginRequest.username())).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(loginRequest.password(), member.getPassword())).thenReturn(true);
 
         // when
-        Long memberId = memberService.login(loginRequest);
+        LoginResponse loginResponse = memberService.login(loginRequest);
 
         // then
-        assertThat(memberId).isEqualTo(member.getId());
+        assertThat(loginResponse.memberId()).isEqualTo(member.getId());
+        assertThat(loginResponse.username()).isEqualTo(member.getUsername());
+        assertThat(loginResponse.profileImageUrl()).isEqualTo(member.getProfileImageUrl());
+        assertThat(loginResponse.realName()).isEqualTo(member.getRealName());
     }
 
     @DisplayName("login: 로그인 실패 - 사용자 없음")

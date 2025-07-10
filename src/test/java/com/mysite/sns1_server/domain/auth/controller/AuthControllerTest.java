@@ -2,6 +2,7 @@ package com.mysite.sns1_server.domain.auth.controller;
 
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.Duration;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysite.sns1_server.domain.auth.dto.CodeRequest;
 import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
+import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
 import com.mysite.sns1_server.domain.auth.dto.VerifyRequest;
 import com.mysite.sns1_server.domain.auth.service.EmailService;
 import com.mysite.sns1_server.domain.member.service.MemberService;
@@ -59,11 +61,12 @@ class AuthControllerTest {
     void loginSuccess() throws Exception {
         // given
         LoginRequest loginRequest = new LoginRequest("test@test.com", "password");
-        given(memberService.login(any(LoginRequest.class))).willReturn(1L);
+        LoginResponse loginResponse = new LoginResponse(1L, "testuser", "test.com", "test");
+        given(memberService.login(any(LoginRequest.class))).willReturn(loginResponse);
         given(accessTokenService.generateToken(anyLong())).willReturn("accessToken");
         given(refreshTokenService.generateToken(anyLong())).willReturn("refreshToken");
-        given(accessTokenService.getTokenName()).willReturn("accessToken");
-        given(refreshTokenService.getTokenName()).willReturn("refreshToken");
+        given(accessTokenService.getTokenName()).willReturn("access-token");
+        given(refreshTokenService.getTokenName()).willReturn("refresh-token");
         given(accessTokenService.getExpiration()).willReturn(Duration.ofMillis(3600000L));
         given(refreshTokenService.getExpiration()).willReturn(Duration.ofMillis(86400000L));
 
@@ -73,7 +76,13 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("로그인 성공, 토큰이 생성되었습니다."));
+                .andExpect(cookie().value("access-token", "accessToken"))
+                .andExpect(cookie().value("refresh-token", "refreshToken"))
+                .andExpect(jsonPath("$.message").value("로그인 성공, 토큰이 생성되었습니다."))
+                .andExpect(jsonPath("$.data.memberId").value(1L))
+                .andExpect(jsonPath("$.data.username").value("testuser"))
+                .andExpect(jsonPath("$.data.profileImageUrl").value("test.com"))
+                .andExpect(jsonPath("$.data.realName").value("test"));
     }
 
     @DisplayName("이메일 인증코드 전송 성공")

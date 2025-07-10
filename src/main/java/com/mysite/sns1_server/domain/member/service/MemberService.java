@@ -3,9 +3,12 @@ package com.mysite.sns1_server.domain.member.service;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
+import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
 import com.mysite.sns1_server.domain.member.dto.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.response.MemberResponse;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
 import com.mysite.sns1_server.global.cache.RedisKeyType;
@@ -17,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService {
 	private final MemberRepository memberRepository;
 	private final RedisService redisService;
@@ -45,7 +49,7 @@ public class MemberService {
 
 	}
 
-	public Long login(LoginRequest request) {
+	public LoginResponse login(LoginRequest request) {
 		String username = request.username();
 		String password = request.password();
 
@@ -55,6 +59,12 @@ public class MemberService {
 		if (!passwordEncoder.matches(password, member.getPassword())) {
 			throw new CustomException(ErrorCode.BAD_CREDENTIAL);
 		}
-		return member.getId();
+		return LoginResponse.from(member);
+	}
+
+	public MemberResponse getMemberById(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+		return MemberResponse.from(member);
 	}
 }
