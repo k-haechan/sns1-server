@@ -37,6 +37,8 @@ public record JoinRequest(
 			.password(passwordEncoder.encode(password))
 			.realName(realName)
 			.email(email)
+			.followerCount(0L)
+			.followingCount(0L)
 			.build();
 	}
 }
