@@ -40,6 +40,14 @@ dependencies {
     // SMTP Mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    // Spring security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // Thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
     // Database Drivers
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
@@ -58,6 +66,13 @@ dependencies {
     // SpringDoc OpenAPI Starter WebMVC UI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
+    // JWT
+    implementation "io.jsonwebtoken:jjwt-api:0.12.6"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:0.12.6"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:0.12.6"
+
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     // AWS SDK for S3
     implementation 'software.amazon.awssdk:s3:2.31.77'
 
@@ -65,14 +80,18 @@ dependencies {
     implementation 'software.amazon.awssdk:cloudfront:2.31.77'
 
 
+    // MongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-build {
-    dependsOn jacocoTestCoverageVerification
 }
 
 
@@ -85,45 +104,44 @@ jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
-                    // 예시: 'com/example/demo/DemoApplication.class'
-                    // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
-                    'com/mysite/sns1_server/domain/**/entity/**',
-                    'com/mysite/sns1_server/domain/**/dto/**',
-                    'com/mysite/sns1_server/domain/**/type/**',
-                    'com/mysite/sns1_server/global/**'
-            ])
-        }))
-    }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, include: [
+                'com/mysite/sns1_server/domain/**/service/**',
+                'com/mysite/sns1_server/domain/**/controller/**'
+        ])
+    }))
 }
 
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = 'BUNDLE' // BUNDLE은 전체 애플리케이션을 의미
-
-            afterEvaluate {
-                classDirectories.setFrom(files(classDirectories.files.collect {
-                    fileTree(dir: it, exclude: [
-                            'com/mysite/sns1_server/Sns1ServerApplication.class', // <-- 여기에 메인 애플리케이션 클래스 경로를 추가
-                            // 예시: 'com/example/demo/DemoApplication.class'
-                            // 만약 특정 패키지 전체를 제외하고 싶다면: 'com/example/demo/config/**'
-                            'com/mysite/sns1_server/domain/**/entity/**',
-                            'com/mysite/sns1_server/domain/**/dto/**',
-                            'com/mysite/sns1_server/domain/**/type/**',
-                            'com/mysite/sns1_server/global/**'
-                    ])
-                }))
-            }
-
+            element = 'BUNDLE'
             limit {
-                counter = 'LINE' // 라인 커버리지 기준
+                counter = 'LINE'
                 value = 'COVEREDRATIO'
                 minimum = 0.80
             }
         }
     }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, include: [
+                'com/mysite/sns1_server/domain/**/service/**',
+                'com/mysite/sns1_server/domain/**/controller/**'
+        ])
+    }))
 }
+
+tasks.named('build') {
+    dependsOn jacocoTestCoverageVerification
+}
+
+def generatedQuerydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main.java.srcDirs += generatedQuerydslDir
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.generatedSourceOutputDirectory = file(generatedQuerydslDir)
+}
+

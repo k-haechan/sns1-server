@@ -1,6 +1,6 @@
 package com.mysite.sns1_server.global.baseEntity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -12,22 +12,24 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
+@Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@Getter
 public abstract class BaseEntity {
-
 	@Id
+	@Setter(AccessLevel.PROTECTED)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@CreatedDate
 	@Column(updatable = false, nullable = false)
-	private LocalDateTime createdAt;
+	private Instant createdAt;
 
 	@LastModifiedDate
 	@Column(nullable = false)
-	private LocalDateTime updatedAt;
+	private Instant updatedAt;
 }

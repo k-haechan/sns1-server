@@ -38,3 +38,6 @@ out/
 
 ### Environment ###
 .env
+.env.production
+
+gemini.md
