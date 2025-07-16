@@ -15,10 +15,10 @@ public final class CookieUtil {
 	public static void setCookie(HttpServletResponse response, String name, String value, Duration maxAge) {
 		ResponseCookie cookie = ResponseCookie.from(name, value)
 			.httpOnly(true)             // 자바스크립트 접근 방지 (권장)
-			.secure(false)              // 로컬 개발(HTTP)을 위해 false. 배포 시에는 true로 변경!
+			.secure(true)              // 로컬 개발(HTTP)을 위해 false. 배포 시에는 true로 변경!
 			.path("/")                  // 전체 경로에서 쿠키 접근 가능
 			.maxAge(maxAge)             // Duration을 초로 자동 변환
-			.domain("localhost")        // <--- 추가: localhost 도메인 전체에서 유효하게 함
+			// .domain("localhost")        // <--- 추가: localhost 도메인 전체에서 유효하게 함
 			.build();
 
 		response.addHeader("Set-Cookie", cookie.toString());
