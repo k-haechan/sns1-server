@@ -33,7 +33,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 				Principal principal = accessor.getUser();
 				Long memberId = Long.parseLong(principal.getName());
 
-				chatRoomService.checkAuthenticationToChatRoom(memberId, chatRoomId);
+				chatRoomService.checkAuthenticationToChatRoom(chatRoomId, memberId);
 			} catch (Exception e) {
 				log.warn("WebSocket 구독 인증 실패: {}", e.getMessage());
 				return null; // 메시지 무시하고 연결은 유지

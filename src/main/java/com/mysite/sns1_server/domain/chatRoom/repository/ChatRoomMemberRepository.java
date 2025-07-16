@@ -22,4 +22,4 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember,L
 	Optional<ChatRoomMember> findByChatRoomIdAndMemberId(@Param("chatRoomId") Long chatRoomId, @Param("memberId") Long memberId);
 
 	@Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM ChatRoomMember c WHERE c.chatRoom.id = :chatRoomId AND c.member.id = :memberId")
-	boolean existsByChatRoomIdAndMemberId(@Param("memberId") Long memberId, @Param("chatRoomId") Long chatRoomId);}
+	boolean existsByChatRoomIdAndMemberId(@Param("chatRoomId") Long chatRoomId, @Param("memberId") Long memberId);}

@@ -53,8 +53,8 @@ public class ChatRoomService {
 		return chatRoomMemberRepository.findChatRoomsByMemberId(memberId, pageable);
 	}
 
-	public void checkAuthenticationToChatRoom(Long memberId, Long chatRoomId) {
-		boolean isExist = chatRoomMemberRepository.existsByChatRoomIdAndMemberId(memberId, chatRoomId);
+	public void checkAuthenticationToChatRoom(Long chatRoomId, Long memberId) {
+		boolean isExist = chatRoomMemberRepository.existsByChatRoomIdAndMemberId(chatRoomId, memberId);
 
 		if(!isExist){
 			throw new CustomException(ErrorCode.CHAT_ROOM_MEMBER_NOT_FOUND);

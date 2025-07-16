@@ -1,12 +1,13 @@
 
 package com.mysite.sns1_server.domain.chatRoom.service;
 
-import com.mysite.sns1_server.domain.chatRoom.dto.response.ChatRoomResponse;
-import com.mysite.sns1_server.domain.chatRoom.entity.ChatRoom;
-import com.mysite.sns1_server.domain.chatRoom.repository.ChatRoomMemberRepository;
-import com.mysite.sns1_server.domain.chatRoom.repository.ChatRoomRepository;
-import com.mysite.sns1_server.domain.member.entity.Member;
-import com.mysite.sns1_server.domain.member.repository.MemberRepository;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,15 +18,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import com.mysite.sns1_server.domain.chatRoom.dto.response.ChatRoomResponse;
+import com.mysite.sns1_server.domain.chatRoom.entity.ChatRoom;
+import com.mysite.sns1_server.domain.chatRoom.repository.ChatRoomMemberRepository;
+import com.mysite.sns1_server.domain.chatRoom.repository.ChatRoomRepository;
+import com.mysite.sns1_server.domain.member.entity.Member;
+import com.mysite.sns1_server.domain.member.repository.MemberRepository;
 import com.mysite.sns1_server.global.exception.CustomException;
 import com.mysite.sns1_server.global.response.code.ErrorCode;
 
@@ -134,10 +132,10 @@ class ChatRoomServiceTest {
         // given
         Long memberId = 1L;
         Long chatRoomId = 1L;
-        when(chatRoomMemberRepository.existsByChatRoomIdAndMemberId(memberId, chatRoomId)).thenReturn(false);
+        when(chatRoomMemberRepository.existsByChatRoomIdAndMemberId(chatRoomId, memberId)).thenReturn(false);
 
         // when, then
-        assertThatThrownBy(() -> chatRoomService.checkAuthenticationToChatRoom(memberId, chatRoomId))
+        assertThatThrownBy(() -> chatRoomService.checkAuthenticationToChatRoom(chatRoomId, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CHAT_ROOM_MEMBER_NOT_FOUND);
     }

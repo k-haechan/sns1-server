@@ -34,7 +34,7 @@ public class ChatController {
 		message = message.addSenderId(senderId);
 
 		// 채팅방 권한 확인
-		chatRoomService.checkAuthenticationToChatRoom(senderId, chatRoomId);
+		chatRoomService.checkAuthenticationToChatRoom(chatRoomId, senderId);
 		// 메시지 저장 및 전송
 		chatService.sendPrivateMessage(message, chatRoomId);
 	}
