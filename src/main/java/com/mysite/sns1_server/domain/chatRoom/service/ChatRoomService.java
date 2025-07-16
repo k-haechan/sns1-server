@@ -41,7 +41,10 @@ public class ChatRoomService {
 
 	@Transactional
 	public ChatRoomResponse getChatRoomForMemberIds(List<Long> memberIds) {
-		List<Member> members = memberIds.stream().map(m -> memberRepository.findById(m).get()).toList();
+		List<Member> members = memberIds.stream()
+			.map(id -> memberRepository.findById(id)
+				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)))
+			.toList();
 
 		ChatRoom chatRoom = chatRoomMemberRepository.findChatRoomByMemberIds(memberIds)
 			.orElseGet(()-> createChatRoom(members));
