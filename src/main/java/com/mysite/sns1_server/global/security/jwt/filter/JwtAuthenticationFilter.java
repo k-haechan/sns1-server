@@ -64,17 +64,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			} else throw new JwtException("Access token is missing");
 		} catch (JwtException e) { // 토큰 검증 실패 시
 			// refresh-token 검증
-			boolean validated = refreshTokenService.validateToken(refreshToken);
-			// 유효한 토큰인 경우 새로운 access-token 발급
-			if (validated) {
-				Claims claims = refreshTokenService.parseClaims(refreshToken);
-				Long memberId = Long.valueOf(claims.getSubject());
-				// 새로운 access-token 발급
-				String newAccessToken = accessTokenService.generateToken(memberId);
-				// 쿠키에 새로운 access-token 설정
-				CookieUtil.setCookie(response, accessTokenName, newAccessToken, accessTokenService.getExpiration());
-				// 인증 객체 생성 및 SecurityContext에 저장
-				setAuthentication(memberId);
+			if (refreshToken != null) {
+				boolean validated = refreshTokenService.validateToken(refreshToken);
+				// 유효한 토큰인 경우 새로운 access-token 발급
+				if (validated) {
+					Claims claims = refreshTokenService.parseClaims(refreshToken);
+					Long memberId = Long.valueOf(claims.getSubject());
+					// 새로운 access-token 발급
+					String newAccessToken = accessTokenService.generateToken(memberId);
+					// 쿠키에 새로운 access-token 설정
+					CookieUtil.setCookie(response, accessTokenName, newAccessToken, accessTokenService.getExpiration());
+					// 인증 객체 생성 및 SecurityContext에 저장
+					setAuthentication(memberId);
+				}
 			}
 		}
 		// 다음 필터로 요청 전달
