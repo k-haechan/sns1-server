@@ -11,8 +11,24 @@ services:
       - redis-data:/data
     command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
 
+  mongo:
+    image: mongo:6.0
+    container_name: mongo-container
+    ports:
+      - "${MONGO_PORT}:27017"
+    networks:
+      - backend-network
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+
 volumes:
   redis-data:
+    driver: local
+  mongo-data:
     driver: local
 
 networks:

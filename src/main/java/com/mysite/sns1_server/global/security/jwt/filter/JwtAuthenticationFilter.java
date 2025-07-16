@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 			memberId,
 			null,
-			List.of(new SimpleGrantedAuthority("ROLE_USER")) // 권한 추가!
+			List.of(new SimpleGrantedAuthority("ROLE_USER"))
 		);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
@@ -54,19 +54,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String accessToken = CookieUtil.extractCookie(request, accessTokenName);
 		String refreshToken = CookieUtil.extractCookie(request, refreshTokenName);
 
+		try {
+			if (accessToken != null) {
+					// JWT 파싱 및 claims 추출
+					Claims claims = accessTokenService.parseClaims(accessToken);
+					Long memberId = Long.valueOf(claims.getSubject());
+					setAuthentication(memberId);
 
-		if (accessToken != null) {
-			try {
-				// JWT 파싱 및 claims 추출
-				Claims claims = accessTokenService.parseClaims(accessToken);
-				Long memberId = Long.valueOf(claims.getSubject());
-				setAuthentication(memberId);
-
-			} catch (JwtException e) { // 토큰 검증 실패 시
-				// refresh-token 검증
+			} else throw new JwtException("Access token is missing");
+		} catch (JwtException e) { // 토큰 검증 실패 시
+			// refresh-token 검증
+			if (refreshToken != null) {
 				boolean validated = refreshTokenService.validateToken(refreshToken);
 				// 유효한 토큰인 경우 새로운 access-token 발급
-				if(validated) {
+				if (validated) {
 					Claims claims = refreshTokenService.parseClaims(refreshToken);
 					Long memberId = Long.valueOf(claims.getSubject());
 					// 새로운 access-token 발급

@@ -1,6 +1,6 @@
 package com.mysite.sns1_server.domain.member.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -25,18 +25,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Member {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@CreatedDate
 	@Column(updatable = false, nullable = false)
-	private LocalDateTime createdAt;
+	private Instant createdAt;
 
 	@LastModifiedDate
 	@Column(nullable = false)
-	private LocalDateTime updatedAt;
+	private Instant updatedAt;
 
 	@Column(nullable = false, unique = true, length = 50)
 	private String username;
@@ -65,4 +64,9 @@ public class Member {
 	@Column
 	@Builder.Default
 	private Boolean isSecret = false;
+
+
+	public static Member createActor(Long id) {
+		return Member.builder().id(id).build();
+	}
 }

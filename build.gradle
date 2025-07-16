@@ -66,12 +66,22 @@ dependencies {
     // SpringDoc OpenAPI Starter WebMVC UI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
-    // jwt
+    // JWT
     implementation "io.jsonwebtoken:jjwt-api:0.12.6"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:0.12.6"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:0.12.6"
 
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+    // MongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 }
 
 tasks.named('test') {
@@ -89,13 +99,9 @@ jacocoTestReport {
         html.required.set(true)
     }
     classDirectories.setFrom(files(classDirectories.files.collect {
-        fileTree(dir: it, exclude: [
-                'com/mysite/sns1_server/Sns1ServerApplication.class',
-                'com/mysite/sns1_server/domain/**/entity/**',
-                'com/mysite/sns1_server/domain/**/dto/**',
-                'com/mysite/sns1_server/domain/**/type/**',
-                'com/mysite/sns1_server/global/**',
-                'com/mysite/sns1_server/common/**'
+        fileTree(dir: it, include: [
+                'com/mysite/sns1_server/domain/**/service/**',
+                'com/mysite/sns1_server/domain/**/controller/**'
         ])
     }))
 }
@@ -112,13 +118,9 @@ jacocoTestCoverageVerification {
         }
     }
     classDirectories.setFrom(files(classDirectories.files.collect {
-        fileTree(dir: it, exclude: [
-                'com/mysite/sns1_server/Sns1ServerApplication.class',
-                'com/mysite/sns1_server/domain/**/entity/**',
-                'com/mysite/sns1_server/domain/**/dto/**',
-                'com/mysite/sns1_server/domain/**/type/**',
-                'com/mysite/sns1_server/global/**',
-                'com/mysite/sns1_server/common/**'
+        fileTree(dir: it, include: [
+                'com/mysite/sns1_server/domain/**/service/**',
+                'com/mysite/sns1_server/domain/**/controller/**'
         ])
     }))
 }
@@ -126,3 +128,14 @@ jacocoTestCoverageVerification {
 tasks.named('build') {
     dependsOn jacocoTestCoverageVerification
 }
+
+def generatedQuerydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main.java.srcDirs += generatedQuerydslDir
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.generatedSourceOutputDirectory = file(generatedQuerydslDir)
+}
+

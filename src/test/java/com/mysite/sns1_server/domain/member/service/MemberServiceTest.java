@@ -16,10 +16,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
-import com.mysite.sns1_server.domain.member.dto.JoinRequest;
-import com.mysite.sns1_server.domain.member.dto.MemberInfoResponse;
-import com.mysite.sns1_server.domain.member.dto.MemberResponse;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import com.mysite.sns1_server.domain.auth.dto.request.LoginRequest;
+import com.mysite.sns1_server.domain.member.dto.request.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.response.MemberDetailResponse;
+import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
 import com.mysite.sns1_server.global.cache.RedisKeyType;
@@ -118,18 +120,25 @@ class MemberServiceTest {
     void loginSuccess() {
         // given
         LoginRequest loginRequest = new LoginRequest("test@example.com", "password");
-        Member member = mock(Member.class);
-        when(member.getId()).thenReturn(1L);
-        when(member.getPassword()).thenReturn("encodedPassword");
+        Member member = Member.builder()
+                .username("testuser")
+                .password("encodedPassword")
+                .realName("test")
+                .profileImageUrl("test.com")
+                .build();
+        ReflectionTestUtils.setField(member, "id", 1L);
 
         when(memberRepository.findByUsername(loginRequest.username())).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(loginRequest.password(), member.getPassword())).thenReturn(true);
 
         // when
-        Long memberId = memberService.login(loginRequest);
+        MemberBriefResponse loginResponse = memberService.login(loginRequest);
 
         // then
-        assertThat(memberId).isEqualTo(member.getId());
+        assertThat(loginResponse.memberId()).isEqualTo(member.getId());
+        assertThat(loginResponse.username()).isEqualTo(member.getUsername());
+        assertThat(loginResponse.profileImageUrl()).isEqualTo(member.getProfileImageUrl());
+        assertThat(loginResponse.realName()).isEqualTo(member.getRealName());
     }
 
     @DisplayName("login: 로그인 실패 - 사용자 없음")
@@ -171,15 +180,17 @@ class MemberServiceTest {
                 .id(memberId)
                 .email("test@example.com")
                 .username("testUser")
+                .realName("테스트 유저")
                 .build();
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
         // when
-        MemberInfoResponse response = memberService.getMemberInfo(memberId);
+        MemberDetailResponse response = memberService.getMemberInfo(memberId);
 
         // then
-        assertThat(response.id()).isEqualTo(memberId);
+        assertThat(response.memberId()).isEqualTo(memberId);
         assertThat(response.username()).isEqualTo(member.getUsername());
+        assertThat(response.realName()).isEqualTo(member.getRealName());
     }
 
     @DisplayName("getMemberInfo: 회원 정보 조회 실패 - 사용자를 찾을 수 없음")
@@ -207,10 +218,10 @@ class MemberServiceTest {
         when(memberRepository.findByUsername(username)).thenReturn(Optional.of(member));
 
         // when
-        MemberResponse response = memberService.searchMemberByUsername(username);
+        MemberBriefResponse response = memberService.searchMemberByUsername(username);
 
         // then
-        assertThat(response.id()).isEqualTo(member.getId());
+        assertThat(response.memberId()).isEqualTo(member.getId());
         assertThat(response.username()).isEqualTo(member.getUsername());
     }
 
