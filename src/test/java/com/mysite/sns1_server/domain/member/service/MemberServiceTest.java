@@ -18,11 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
-import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
-import com.mysite.sns1_server.domain.member.dto.JoinRequest;
-import com.mysite.sns1_server.domain.member.dto.MemberInfoResponse;
-import com.mysite.sns1_server.domain.member.dto.MemberResponse;
+import com.mysite.sns1_server.domain.auth.dto.request.LoginRequest;
+import com.mysite.sns1_server.domain.member.dto.request.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.response.MemberDetailResponse;
+import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
 import com.mysite.sns1_server.global.cache.RedisKeyType;
@@ -133,7 +132,7 @@ class MemberServiceTest {
         when(passwordEncoder.matches(loginRequest.password(), member.getPassword())).thenReturn(true);
 
         // when
-        LoginResponse loginResponse = memberService.login(loginRequest);
+        MemberBriefResponse loginResponse = memberService.login(loginRequest);
 
         // then
         assertThat(loginResponse.memberId()).isEqualTo(member.getId());
@@ -181,15 +180,17 @@ class MemberServiceTest {
                 .id(memberId)
                 .email("test@example.com")
                 .username("testUser")
+                .realName("테스트 유저")
                 .build();
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
         // when
-        MemberInfoResponse response = memberService.getMemberInfo(memberId);
+        MemberDetailResponse response = memberService.getMemberInfo(memberId);
 
         // then
-        assertThat(response.id()).isEqualTo(memberId);
+        assertThat(response.memberId()).isEqualTo(memberId);
         assertThat(response.username()).isEqualTo(member.getUsername());
+        assertThat(response.realName()).isEqualTo(member.getRealName());
     }
 
     @DisplayName("getMemberInfo: 회원 정보 조회 실패 - 사용자를 찾을 수 없음")
@@ -217,10 +218,10 @@ class MemberServiceTest {
         when(memberRepository.findByUsername(username)).thenReturn(Optional.of(member));
 
         // when
-        MemberResponse response = memberService.searchMemberByUsername(username);
+        MemberBriefResponse response = memberService.searchMemberByUsername(username);
 
         // then
-        assertThat(response.id()).isEqualTo(member.getId());
+        assertThat(response.memberId()).isEqualTo(member.getId());
         assertThat(response.username()).isEqualTo(member.getUsername());
     }
 

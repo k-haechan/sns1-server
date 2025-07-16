@@ -1,48 +1,41 @@
 package com.mysite.sns1_server.domain.chat.controller;
 
 import java.security.Principal;
-import java.time.Instant;
 
-import org.springframework.data.domain.Page;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.mysite.sns1_server.domain.chat.document.Chat;
-import com.mysite.sns1_server.domain.chat.dto.ChatMessage;
+import com.mysite.sns1_server.domain.chat.dto.request.ChatRequest;
 import com.mysite.sns1_server.domain.chat.service.ChatService;
-import com.mysite.sns1_server.global.response.CustomResponseBody;
+import com.mysite.sns1_server.domain.chatRoom.service.ChatRoomService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final ChatService chatService;
+	private final ChatRoomService chatRoomService;
+
 
 	@MessageMapping("/chat.send") // 클라이언트에서 /app/chat.send로 보냄
-	public void sendPrivateMessage(@Payload ChatMessage message, Principal principal) {
-		// 현재 인증된 사용자를 보낸 사람으로 설정
-		message.addSender(Long.parseLong(principal.getName()));
+	@Operation(summary = "채팅 전송", description = "채팅방에 채팅을 전송합니다.")
+	public void sendPrivateMessage(@Payload ChatRequest message, Principal principal) {
+		Long senderId = Long.parseLong(principal.getName());
+		Long chatRoomId = message.chatRoomId();
 
-		chatService.sendPrivateMessage(message);
-	}
+		message = message.addSenderId(senderId);
 
-	@GetMapping("/chat/room/{chatRoomId}/messages")
-	@ResponseBody
-	public CustomResponseBody<Page<Chat>> getChatMessages(
-		@PathVariable Long chatRoomId,
-		@RequestParam(required = false) Instant lastMessageTime,
-		@RequestParam(defaultValue = "20") int size
-	) {
-		Page<Chat> messages = chatService.getChatMessages(chatRoomId, lastMessageTime, size);
-		return CustomResponseBody.of("채팅 메시지 조회 성공", messages);
+		// 채팅방 권한 확인
+		chatRoomService.checkAuthenticationToChatRoom(senderId, chatRoomId);
+		// 메시지 저장 및 전송
+		chatService.sendPrivateMessage(message, chatRoomId);
 	}
 }

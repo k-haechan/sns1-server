@@ -17,9 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysite.sns1_server.domain.member.dto.JoinRequest;
-import com.mysite.sns1_server.domain.member.dto.MemberInfoResponse;
-import com.mysite.sns1_server.domain.member.dto.MemberResponse;
+import com.mysite.sns1_server.domain.member.dto.request.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.response.MemberDetailResponse;
+import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 import com.mysite.sns1_server.domain.member.service.MemberService;
 import com.mysite.sns1_server.global.config.ServerConfig;
 import com.mysite.sns1_server.global.security.jwt.service.JwtService;
@@ -83,14 +83,15 @@ class MemberControllerTest {
     void getMemberInfo_success() throws Exception {
         // given
         Long memberId = 1L;
-        MemberInfoResponse memberInfoResponse = new MemberInfoResponse(memberId, "testUser", "profile.jpg", "intro", 10L, 20L);
-        when(memberService.getMemberInfo(memberId)).thenReturn(memberInfoResponse);
+        MemberDetailResponse memberDetailResponse = new MemberDetailResponse(memberId, "testUser", "테스트 유저", "profile.jpg", "intro", 10L, 20L);
+        when(memberService.getMemberInfo(memberId)).thenReturn(memberDetailResponse);
 
         // when, then
-        mockMvc.perform(get("/api/v1/members/{memberId}", memberId))
+        mockMvc.perform(get("/api/v1/members/{member_id}", memberId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(memberId))
-                .andExpect(jsonPath("$.data.username").value("testUser"));
+                .andExpect(jsonPath("$.data.member_id").value(memberId))
+                .andExpect(jsonPath("$.data.username").value("testUser"))
+                .andExpect(jsonPath("$.data.real_name").value("테스트 유저"));
     }
 
     @DisplayName("searchMemberByName: 회원 이름으로 검색 성공")
@@ -98,13 +99,13 @@ class MemberControllerTest {
     void searchMemberByName_success() throws Exception {
         // given
         String username = "testUser";
-        MemberResponse memberResponse = new MemberResponse(1L, "testUser", "profile.jpg");
-        when(memberService.searchMemberByUsername(username)).thenReturn(memberResponse);
+        MemberBriefResponse memberBriefResponse = new MemberBriefResponse(1L, "testUser", "테스트 유저", "profile.jpg");
+        when(memberService.searchMemberByUsername(username)).thenReturn(memberBriefResponse);
 
         // when, then
         mockMvc.perform(get("/api/v1/members").param("username", username))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(1L))
+                .andExpect(jsonPath("$.data.member_id").value(1L))
                 .andExpect(jsonPath("$.data.username").value("testUser"));
     }
 }

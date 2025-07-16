@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mysite.sns1_server.common.util.CookieUtil;
-import com.mysite.sns1_server.domain.auth.dto.CodeRequest;
-import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
-import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
-import com.mysite.sns1_server.domain.auth.dto.VerifyRequest;
+import com.mysite.sns1_server.domain.auth.dto.request.CodeRequest;
+import com.mysite.sns1_server.domain.auth.dto.request.LoginRequest;
+import com.mysite.sns1_server.domain.auth.dto.request.VerifyRequest;
 import com.mysite.sns1_server.domain.auth.service.EmailService;
+import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 import com.mysite.sns1_server.domain.member.service.MemberService;
 import com.mysite.sns1_server.global.cache.RedisKeyType;
 import com.mysite.sns1_server.global.cache.RedisService;
@@ -43,8 +43,8 @@ public class AuthController {
 	@PostMapping( value = "/login", consumes = "application/json")
 	@Operation(summary = "로그인", description = "회원 정보를 기반으로 로그인합니다.")
 	@ResponseStatus(HttpStatus.OK)
-	public CustomResponseBody<LoginResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-		LoginResponse loginResponse = memberService.login(request);
+	public CustomResponseBody<MemberBriefResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+		MemberBriefResponse loginResponse = memberService.login(request);
 
 		// 액세스 토큰 생성 및 쿠키 설정
 		CookieUtil.setCookie(

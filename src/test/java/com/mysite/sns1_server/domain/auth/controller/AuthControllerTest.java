@@ -2,7 +2,6 @@ package com.mysite.sns1_server.domain.auth.controller;
 
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.Duration;
@@ -17,11 +16,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysite.sns1_server.domain.auth.dto.CodeRequest;
-import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
-import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
-import com.mysite.sns1_server.domain.auth.dto.VerifyRequest;
+import com.mysite.sns1_server.domain.auth.dto.request.CodeRequest;
+import com.mysite.sns1_server.domain.auth.dto.request.LoginRequest;
+import com.mysite.sns1_server.domain.auth.dto.request.VerifyRequest;
 import com.mysite.sns1_server.domain.auth.service.EmailService;
+import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 import com.mysite.sns1_server.domain.member.service.MemberService;
 import com.mysite.sns1_server.global.cache.RedisService;
 import com.mysite.sns1_server.global.security.jwt.service.AccessTokenService;
@@ -61,7 +60,7 @@ class AuthControllerTest {
     void loginSuccess() throws Exception {
         // given
         LoginRequest loginRequest = new LoginRequest("test@test.com", "password");
-        LoginResponse loginResponse = new LoginResponse(1L, "testuser", "test.com", "test");
+        MemberBriefResponse loginResponse = new MemberBriefResponse(1L, "testuser", "test", "test.com");
         given(memberService.login(any(LoginRequest.class))).willReturn(loginResponse);
         given(accessTokenService.generateToken(anyLong())).willReturn("accessToken");
         given(refreshTokenService.generateToken(anyLong())).willReturn("refreshToken");
@@ -79,10 +78,10 @@ class AuthControllerTest {
                 .andExpect(cookie().value("access-token", "accessToken"))
                 .andExpect(cookie().value("refresh-token", "refreshToken"))
                 .andExpect(jsonPath("$.message").value("로그인 성공, 토큰이 생성되었습니다."))
-                .andExpect(jsonPath("$.data.memberId").value(1L))
+                .andExpect(jsonPath("$.data.member_id").value(1L))
                 .andExpect(jsonPath("$.data.username").value("testuser"))
-                .andExpect(jsonPath("$.data.profileImageUrl").value("test.com"))
-                .andExpect(jsonPath("$.data.realName").value("test"));
+                .andExpect(jsonPath("$.data.profile_image_url").value("test.com"))
+                .andExpect(jsonPath("$.data.real_name").value("test"));
     }
 
     @DisplayName("이메일 인증코드 전송 성공")

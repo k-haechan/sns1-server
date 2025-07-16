@@ -1,21 +1,22 @@
-package com.mysite.sns1_server.domain.chat.entity;
+package com.mysite.sns1_server.domain.chatRoom.entity;
 
 import com.mysite.sns1_server.global.baseEntity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class ChatRoom extends BaseEntity {
-
+	// 255
 	@Column(length = 255)
-	private Long lowerMemberId;
+	String lastChat;
 
-	@Column(length = 255)
-	private Long upperMemberId;
+	public static ChatRoom createChatRoom() {
+		return new ChatRoom();
+	}
 }

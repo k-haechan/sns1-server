@@ -5,12 +5,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mysite.sns1_server.domain.auth.dto.LoginRequest;
-import com.mysite.sns1_server.domain.auth.dto.LoginResponse;
-import com.mysite.sns1_server.domain.member.dto.JoinRequest;
-import com.mysite.sns1_server.domain.member.dto.response.MemberResponse;
-import com.mysite.sns1_server.domain.member.dto.MemberInfoResponse;
-import com.mysite.sns1_server.domain.member.dto.MemberResponse;
+import com.mysite.sns1_server.domain.auth.dto.request.LoginRequest;
+import com.mysite.sns1_server.domain.member.dto.request.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
+import com.mysite.sns1_server.domain.member.dto.response.MemberDetailResponse;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
 import com.mysite.sns1_server.global.cache.RedisKeyType;
@@ -28,6 +26,7 @@ public class MemberService {
 	private final RedisService redisService;
 	private final PasswordEncoder passwordEncoder;
 
+	@Transactional
 	public void join(JoinRequest request) {
 		String email = request.email();
 		if (!redisService.hasKey(RedisKeyType.VERIFIED_EMAIL, email)) {
@@ -51,7 +50,7 @@ public class MemberService {
 
 	}
 
-	public LoginResponse login(LoginRequest request) {
+	public MemberBriefResponse login(LoginRequest request) {
 		String username = request.username();
 		String password = request.password();
 
@@ -61,27 +60,21 @@ public class MemberService {
 		if (!passwordEncoder.matches(password, member.getPassword())) {
 			throw new CustomException(ErrorCode.BAD_CREDENTIAL);
 		}
-		return LoginResponse.from(member);
+		return MemberBriefResponse.from(member);
 	}
 
-	public MemberResponse getMemberById(Long memberId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-		return MemberResponse.from(member);
-	}
-
-	public MemberInfoResponse getMemberInfo(Long memberId) {
+	public MemberDetailResponse getMemberInfo(Long memberId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-		return MemberInfoResponse.from(member);
+		return MemberDetailResponse.from(member);
 
 	}
 
-	public MemberResponse searchMemberByUsername(String username) {
+	public MemberBriefResponse searchMemberByUsername(String username) {
 		Member member = memberRepository.findByUsername(username)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-		return MemberResponse.from(member);
+		return MemberBriefResponse.from(member);
 	}
 }

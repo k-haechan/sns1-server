@@ -1,4 +1,4 @@
-package com.mysite.sns1_server.domain.member.dto;
+package com.mysite.sns1_server.domain.member.dto.request;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
