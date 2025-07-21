@@ -1,4 +1,4 @@
-package com.mysite.sns1_server.global.config;
+package com.mysite.sns1_server.global.config.common;
 
 import java.util.concurrent.Executor;
 

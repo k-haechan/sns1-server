@@ -1,4 +1,4 @@
-package com.mysite.sns1_server.global.config;
+package com.mysite.sns1_server.global.config.common;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;

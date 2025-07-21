@@ -1,4 +1,4 @@
-package com.mysite.sns1_server.global.config;
+package com.mysite.sns1_server.global.config.security;
 
 import java.time.Duration;
 

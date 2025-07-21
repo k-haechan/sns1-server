@@ -21,7 +21,7 @@ import com.mysite.sns1_server.domain.member.dto.request.JoinRequest;
 import com.mysite.sns1_server.domain.member.dto.response.MemberDetailResponse;
 import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 import com.mysite.sns1_server.domain.member.service.MemberService;
-import com.mysite.sns1_server.global.config.ServerConfig;
+import com.mysite.sns1_server.global.config.common.ServerConfig;
 import com.mysite.sns1_server.global.security.jwt.service.JwtService;
 
 @WebMvcTest(MemberController.class)
