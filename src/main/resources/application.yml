@@ -1,15 +1,18 @@
 spring:
   application:
     name: sns1_server
+
   config:
     import:
         - optional:file:.env[.properties]
+        - optional:classpath:config/application-common.yml
         - optional:classpath:config/${spring.profiles.active}/application-${spring.profiles.active}_db.yml
         - optional:classpath:config/${spring.profiles.active}/application-${spring.profiles.active}_server.yml
         - optional:classpath:config/${spring.profiles.active}/application-${spring.profiles.active}_auth.yml
         - optional:classpath:config/${spring.profiles.active}/application-${spring.profiles.active}_docs.yml
+
   profiles:
     group:
-        dev: [ "dev_db" ]
-        prod: [ "prod_db" ]
+        dev: [ "dev_db", "dev_server", "dev_auth" ]
+        prod: [ "prod_db", "prod_server", "prod_auth" ]
     active: dev

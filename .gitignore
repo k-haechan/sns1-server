@@ -38,3 +38,9 @@ out/
 
 ### Environment ###
 .env
+.env.production
+
+gemini.md
+
+### PrivateKey ###
+*.pem

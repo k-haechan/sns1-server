@@ -1,0 +1,7 @@
+custom:
+  server:
+    frontend:
+      url: "http://localhost:3000"
+#      urls:
+#        - "http://localhost:3000"
+#        - "http://localhost:3001"
