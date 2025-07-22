@@ -2,7 +2,6 @@ package com.mysite.sns1_server.domain.post.controller;
 
 import java.security.Principal;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,9 +39,6 @@ public class PostController {
 	private final ImageService imageService;
 	private final CloudFrontService cloudFrontService;
 	private final S3Service s3Service;
-
-	@Value("${server.root.domain}")
-	String rootDomain;
 
 	/* 게시물 업로드 */
 	@PostMapping
