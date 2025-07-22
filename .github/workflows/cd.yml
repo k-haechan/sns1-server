@@ -144,6 +144,7 @@ jobs:
     env:
       DOCKER_IMAGE_NAME: ${{ needs.build-image-and-push.outputs.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ needs.build-image-and-push.outputs.OWNER_LC }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: AWS 로그인 (OIDC)
@@ -171,20 +172,21 @@ jobs:
               --region ap-northeast-2 \
               --parameters commands='[
                 "set -e",
-                "CURRENT_PORT=$(docker ps --filter \\\"name=app1\\\" --format '\''{{.Ports}}'\'' | grep -q 8080 && echo 8080 || echo 8081)",
-                "if [ \\\"$CURRENT_PORT\\\" = \\\"8080\\\" ]; then NEXT_PORT=8081; else NEXT_PORT=8080; fi",
-                "CURRENT_APP=app$( [ \\\"$CURRENT_PORT\\\" = \\\"8080\\\" ] && echo 1 || echo 2 )",
-                "NEXT_APP=app$( [ \\\"$NEXT_PORT\\\" = \\\"8080\\\" ] && echo 1 || echo 2 )",
+                "CURRENT_PORT=$(docker ps --filter \"name=app1\" --format '\''{{.Ports}}'\'')",
+                "if [ \"$CURRENT_PORT\" = \"8080\" ]; then NEXT_PORT=8081; else NEXT_PORT=8080; fi",
+                "CURRENT_APP=app$( [ \"$CURRENT_PORT\" = \"8080\" ] && echo 1 || echo 2 )",
+                "NEXT_APP=app$( [ \"$NEXT_PORT\" = \"8080\" ] && echo 1 || echo 2 )",
+                "echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin",
                 "docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
                 "docker run -d --network common --name $NEXT_APP -p $NEXT_PORT:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
                 "for i in $(seq 1 10); do",
                 "  sleep 1",
-                "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o '\''UP'\'' || true)",
-                "  if [ \\\"$STATUS\\\" = \\\"UP\\\" ]; then echo \\\"✅ Health check success\\\"; break; fi",
-                "  if [ $i -eq 10 ]; then echo \\\"❌ Health check failed\\\"; docker stop $NEXT_APP && docker rm $NEXT_APP; exit 1; fi",
+                "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o 'UP' || true)",
+                "  if [ \"$STATUS\" = \"UP\" ]; then echo \"✅ Health check success\"; break; fi",
+                "  if [ $i -eq 10 ]; then echo \"❌ Health check failed\"; docker stop $NEXT_APP && docker rm $NEXT_APP; exit 1; fi",
                 "done",
                 "docker stop $CURRENT_APP || true",
                 "docker rm $CURRENT_APP || true",
-                "docker rmi $(docker images -f '\''dangling=true'\'' -q) || true"
+                "docker rmi $(docker images -f 'dangling=true' -q) || true"
               ]'
           done
