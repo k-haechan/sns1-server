@@ -38,6 +38,7 @@ import com.mysite.sns1_server.global.security.jwt.service.JwtService;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+@DisplayName("MemberController 단위테스트")
 @WebMvcTest(MemberController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class MemberControllerTest {
