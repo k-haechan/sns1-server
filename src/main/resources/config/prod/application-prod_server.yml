@@ -1,5 +1,21 @@
 custom:
   server:
     frontend:
-      urls:
-        - ${FRONTEND_URL}
+      url: ${FRONTEND_URL}
+
+server:
+  root:
+    domain: ${ROOT_DOMAIN}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+    cloudfront:
+      key-pair-id: ${AWS_KEYPAIR_ID}
+      cdn-host: ${CDN_URL}
+    region:
+      static: ap-northeast-2
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_PRIVATE_KEY}
