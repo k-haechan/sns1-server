@@ -2,6 +2,7 @@ package com.mysite.sns1_server.domain.member.dto.request;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mysite.sns1_server.domain.member.entity.Member;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +24,7 @@ public record JoinRequest(
 	@NotBlank
 	@Size(max = 50)
 	@Schema(description = "회원가입할 사용자의 realName", example = "테스트 유저")
+	@JsonProperty("real-name")
 	String realName,
 
 	@NotBlank

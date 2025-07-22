@@ -28,6 +28,7 @@ import com.mysite.sns1_server.global.security.jwt.service.RefreshTokenService;
 
 import jakarta.servlet.http.Cookie;
 
+@DisplayName("AuthController 단위 테스트")
 @WebMvcTest(controllers = AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {

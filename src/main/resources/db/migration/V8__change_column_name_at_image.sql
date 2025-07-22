@@ -1,0 +1,9 @@
+ALTER TABLE image
+    ADD `path` VARCHAR(255) NULL;
+
+ALTER TABLE image
+    MODIFY `path` VARCHAR (255) NOT NULL;
+
+ALTER TABLE image
+DROP
+COLUMN url;

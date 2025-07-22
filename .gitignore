@@ -41,3 +41,6 @@ out/
 .env.production
 
 gemini.md
+
+### PrivateKey ###
+*.pem

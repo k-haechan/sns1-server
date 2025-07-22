@@ -31,6 +31,10 @@ public enum ErrorCode {
 
 	// Chat Room Errors
 	CHAT_ROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방에 접속할 수 없습니다."),
+
+	// Post Errors
+	POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스에 접근할 수 없습니다."),
 	;
 
 

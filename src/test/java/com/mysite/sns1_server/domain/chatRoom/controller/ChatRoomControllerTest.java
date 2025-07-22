@@ -36,6 +36,7 @@ import com.mysite.sns1_server.domain.chatRoom.dto.response.ChatRoomResponse;
 import com.mysite.sns1_server.domain.chatRoom.service.ChatRoomService;
 import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 
+@DisplayName("ChatRoomController 단위테스트")
 @WebMvcTest(ChatRoomController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class ChatRoomControllerTest {

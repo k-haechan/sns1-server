@@ -1,4 +1,4 @@
-package com.mysite.sns1_server.global.config;
+package com.mysite.sns1_server.global.config.security;
 
 import static org.springframework.http.HttpMethod.*;
 
@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.mysite.sns1_server.global.config.common.ServerConfig;
 import com.mysite.sns1_server.global.security.exception.CustomAccessDeniedHandler;
 import com.mysite.sns1_server.global.security.exception.CustomAuthenticationEntryPoint;
 import com.mysite.sns1_server.global.security.jwt.filter.JwtAuthenticationFilter;
