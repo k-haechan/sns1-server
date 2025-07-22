@@ -48,6 +48,7 @@ public class Post {
 	@Column(nullable = false, length = 2000)
 	private String content;
 
+	@Builder.Default
 	@Column(nullable = false, length = 100)
 	private Long likeCount = 0L;
 
