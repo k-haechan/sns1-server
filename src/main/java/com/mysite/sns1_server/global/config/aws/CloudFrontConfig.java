@@ -36,9 +36,9 @@ public class CloudFrontConfig {
 
 	@Bean
 	public PrivateKey loadPrivateKey() throws IOException, RuntimeException {
-		Path path = Paths.get(PRIVATE_KEY_PATH);
+		Path path = Paths.get(privateKeyPath);
 		if (!Files.exists(path)) {
-			throw new IOException("PEM 파일이 지정된 경로에 존재하지 않습니다: " + PRIVATE_KEY_PATH);
+			throw new IOException("PEM 파일이 지정된 경로에 존재하지 않습니다: " + privateKeyPath);
 		}
 
 		try (Reader reader = new FileReader(path.toFile())) {
