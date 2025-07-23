@@ -29,7 +29,7 @@ public class CloudFrontConfig {
 	@Value("${cloud.aws.cloudfront.cdn-host}")
 	private String cdnHost;
 
-	@Value("${cloud.aws.cloudfront.private_key_path}")
+	@Value("${cloud.aws.cloudfront.private-key-path}")
 	private String privateKeyPath;
 
 	public static final long VALID_SECONDS = 5*60;
