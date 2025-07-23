@@ -29,15 +29,16 @@ public class CloudFrontConfig {
 	@Value("${cloud.aws.cloudfront.cdn-host}")
 	private String cdnHost;
 
-	private final String PRIVATE_KEY_PATH = "src/main/resources/key/private_key.pem";
+	@Value("${cloud.aws.cloudfront.private_key_path}")
+	private String privateKeyPath;
 
 	public static final long VALID_SECONDS = 5*60;
 
 	@Bean
 	public PrivateKey loadPrivateKey() throws IOException, RuntimeException {
-		Path path = Paths.get(PRIVATE_KEY_PATH);
+		Path path = Paths.get(privateKeyPath);
 		if (!Files.exists(path)) {
-			throw new IOException("PEM 파일이 지정된 경로에 존재하지 않습니다: " + PRIVATE_KEY_PATH);
+			throw new IOException("PEM 파일이 지정된 경로에 존재하지 않습니다: " + privateKeyPath);
 		}
 
 		try (Reader reader = new FileReader(path.toFile())) {
