@@ -29,7 +29,8 @@ public class CloudFrontConfig {
 	@Value("${cloud.aws.cloudfront.cdn-host}")
 	private String cdnHost;
 
-	private final String PRIVATE_KEY_PATH = "src/main/resources/key/private_key.pem";
+	@Value("${cloud.aws.cloudfront.private_key_path}")
+	private String PRIVATE_KEY_PATH; // = "src/main/resources/key/private_key.pem";
 
 	public static final long VALID_SECONDS = 5*60;
 
