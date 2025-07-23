@@ -37,10 +37,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: .env 파일 생성
-        run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
-
       - name: Create private_key.pem
         run: |
           mkdir -p src/main/resources/keys
