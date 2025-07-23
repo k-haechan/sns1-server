@@ -171,21 +171,23 @@ jobs:
               --region ap-northeast-2 \
               --parameters commands='[
                 "set -e",
-                "CURRENT_PORT=$(docker ps --filter \"name=app1\" --format '\''{{.Ports}}'\'')",
-                "if [ \"$CURRENT_PORT\" = \"8080\" ]; then NEXT_PORT=8081; else NEXT_PORT=8080; fi",
-                "CURRENT_APP=app$( [ \"$CURRENT_PORT\" = \"8080\" ] && echo 1 || echo 2 )",
-                "NEXT_APP=app$( [ \"$NEXT_PORT\" = \"8080\" ] && echo 1 || echo 2 )",
-                "echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin",
+                "if docker ps --filter \"name=app1\" --format '\''{{.Names}}'\'' | grep -q '\''app1'\''; then CURRENT_APP=app1; else CURRENT_APP=app2; fi",
+                "if [ \"$CURRENT_APP\" = \"app1\" ]; then NEXT_APP=app2; NEXT_PORT=8081; else NEXT_APP=app1; NEXT_PORT=8080; fi",
+
+                "echo '\''${{ secrets.GHCR_TOKEN }}'\'' | docker login ghcr.io -u '\''${{ github.actor }}'\'' --password-stdin",
                 "docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
+
                 "docker run -d --network common --name $NEXT_APP -p $NEXT_PORT:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
+
                 "for i in $(seq 1 10); do",
                 "  sleep 1",
-                "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o 'UP' || true)",
+                "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o '\''UP'\'' || true)",
                 "  if [ \"$STATUS\" = \"UP\" ]; then echo \"✅ Health check success\"; break; fi",
                 "  if [ $i -eq 10 ]; then echo \"❌ Health check failed\"; docker stop $NEXT_APP && docker rm $NEXT_APP; exit 1; fi",
                 "done",
+
                 "docker stop $CURRENT_APP || true",
                 "docker rm $CURRENT_APP || true",
-                "docker rmi $(docker images -f 'dangling=true' -q) || true"
+                "docker rmi $(docker images -f '\''dangling=true'\'' -q) || true"
               ]'
           done
