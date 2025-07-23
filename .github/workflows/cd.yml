@@ -144,7 +144,6 @@ jobs:
     env:
       DOCKER_IMAGE_NAME: ${{ needs.build-image-and-push.outputs.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ needs.build-image-and-push.outputs.OWNER_LC }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: AWS 로그인 (OIDC)
@@ -176,7 +175,7 @@ jobs:
                 "if [ \"$CURRENT_PORT\" = \"8080\" ]; then NEXT_PORT=8081; else NEXT_PORT=8080; fi",
                 "CURRENT_APP=app$( [ \"$CURRENT_PORT\" = \"8080\" ] && echo 1 || echo 2 )",
                 "NEXT_APP=app$( [ \"$NEXT_PORT\" = \"8080\" ] && echo 1 || echo 2 )",
-                "echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin",
+                "echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin",
                 "docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
                 "docker run -d --network common --name $NEXT_APP -p $NEXT_PORT:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
                 "for i in $(seq 1 10); do",
