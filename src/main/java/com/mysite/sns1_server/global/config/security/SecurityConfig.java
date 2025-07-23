@@ -64,6 +64,9 @@ public class SecurityConfig {
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 					"/swagger-ui.html").permitAll()
 
+				// actuator healthy check 접근 허용
+				.requestMatchers("/actuator/health").permitAll()
+
 				// MEMBER Domain
 				.requestMatchers(POST, "/api/v1/members/join").permitAll()
 				.requestMatchers(POST, "/api/v1/auth/**").permitAll()
