@@ -180,7 +180,7 @@ jobs:
                 "echo \"🚀 Starting container: $NEXT_APP on port $NEXT_PORT\"",
                 "docker run -d --network common --name $NEXT_APP -p $NEXT_PORT:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest",
 
-                "for i in $(seq 1 10); do",
+                "for i in $(seq 1 100); do",
                 "  sleep 1",
                 "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o '\''UP'\'' || true)",
                 "  echo \"STATUS: $STATUS\"",
