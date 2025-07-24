@@ -187,11 +187,11 @@ jobs:
                 "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o '\"status\":\"UP\"' | cut -d':' -f2 | tr -d '\"' || true)",
                 "  echo \"STATUS: $STATUS\"",
                 "  if [ \"$STATUS\" = \"UP\" ]; then echo \"✅ Health check success\"; break; fi",
-                "  if [ $i -eq 10 ]; then echo \"❌ Health check failed\"; docker stop $NEXT_APP && docker rm $NEXT_APP; exit 1; fi",
+                "  if [ $i -eq 20 ]; then echo \"❌ Health check failed\"; docker stop $NEXT_APP && docker rm $NEXT_APP; exit 1; fi",
                 "done",
-
+                
                 "docker stop $CURRENT_APP || true",
                 "docker rm $CURRENT_APP || true",
-                "docker rmi $(docker images -f '\''dangling=true'\'' -q) || true"
+                "docker rmi $(docker images -f \"dangling=true\" -q) || true"
               ]'
           done
