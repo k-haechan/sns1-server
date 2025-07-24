@@ -182,9 +182,9 @@ jobs:
 
                 "sleep 5",
 
-                "for i in $(seq 1 10); do",
+                "for i in $(seq 1 20); do",
                 "  sleep 1",
-                "  STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o '\''UP'\'' || true)",
+                "STATUS=$(curl -sf http://localhost:$NEXT_PORT/actuator/health | grep -o '\"status\":\"UP\"' | cut -d':' -f2 | tr -d '\"' || true)",
                 "  echo \"STATUS: $STATUS\"",
                 "  if [ \"$STATUS\" = \"UP\" ]; then echo \"✅ Health check success\"; break; fi",
                 "  if [ $i -eq 10 ]; then echo \"❌ Health check failed\"; docker stop $NEXT_APP && docker rm $NEXT_APP; exit 1; fi",
