@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.post.dto.PostRequest;
@@ -11,6 +12,7 @@ import com.mysite.sns1_server.global.aws.s3.service.S3Service;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +30,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class Post {
 	@Id
 	@Setter(AccessLevel.PROTECTED)
