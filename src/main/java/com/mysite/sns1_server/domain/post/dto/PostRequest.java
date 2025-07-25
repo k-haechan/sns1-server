@@ -16,6 +16,11 @@ public record PostRequest(
 	Integer imagesLength
 ) {
 	public Post toPost(Member member) {
-		return new Post(member, this.title, this.content);
+		return Post.builder()
+			.author(member)
+			.title(title)
+			.content(content)
+			.likeCount(0L)
+			.build();
 	}
 }
