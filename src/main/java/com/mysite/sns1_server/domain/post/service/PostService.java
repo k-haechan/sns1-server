@@ -69,7 +69,7 @@ public class PostService {
 			postRepository.findByAuthorOrderByIdDesc(author, pageable) :
 			postRepository.findByAuthorAndIdLessThanOrderByIdDesc(author, cursorId, pageable);
 
-		return posts.map(post -> PostResponse.from(post, List.of(ImageResponse.from(post.getThumbnailUrl(s3Service)))));
+		return posts.map(post -> PostResponse.from(post, List.of(ImageResponse.from(post.getThumbnailUrl(cloudFrontService)))));
 	}
 
 
