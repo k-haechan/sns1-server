@@ -71,8 +71,6 @@ public class PostController {
 		// 접근할 수 있는 Cookie 발급
 		cloudFrontService.generateSignedCookies(memberId, response);
 
-		log.debug(response.toString());
-
 		return CustomResponseBody.of("게시물이 성공적으로 반환되었습니다.", result);
 	}
 

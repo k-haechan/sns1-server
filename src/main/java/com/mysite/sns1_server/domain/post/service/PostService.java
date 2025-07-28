@@ -2,7 +2,6 @@ package com.mysite.sns1_server.domain.post.service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -54,9 +53,8 @@ public class PostService {
 		List<Image> images = imageService.findByPost(post);
 		String cdnHost = cloudFrontService.getCdnHost();
 		List<ImageResponse> imageResponses = images.stream()
-			.map(image -> ImageResponse.from(image, cdnHost)).collect(
-			Collectors.toList());
-
+			.map(image -> ImageResponse.from(image, cdnHost))
+			.toList();
 		// todo: post.author가 비공개계정이라면 팔로우 관계만 볼 수 있음
 
 		return PostResponse.from(post, imageResponses);
