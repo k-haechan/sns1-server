@@ -121,7 +121,7 @@ class PostServiceTest {
 
         when(postRepository.findByAuthorOrderByIdDesc(any(Member.class), any(Pageable.class)))
             .thenReturn(postsSlice);
-        when(s3Service.getPostImagePath(anyLong(), anyLong(), anyInt())).thenReturn("http://s3.example.com/thumbnail.jpg");
+        when(cloudFrontService.getPostImagePath(eq(testMember), any(Post.class), eq(0))).thenReturn("http://s3.example.com/thumbnail.jpg");
 
         SliceImpl<PostResponse> result = (SliceImpl<PostResponse>) postService.findPosts(testMember.getId(), null, pageable);
 
@@ -142,7 +142,7 @@ class PostServiceTest {
 
         when(postRepository.findByAuthorAndIdLessThanOrderByIdDesc(any(Member.class), anyLong(), any(Pageable.class)))
             .thenReturn(postsSlice);
-        when(s3Service.getPostImagePath(anyLong(), anyLong(), anyInt())).thenReturn("http://s3.example.com/thumbnail.jpg");
+        when(cloudFrontService.getPostImagePath(eq(testMember), any(Post.class), eq(0))).thenReturn("http://s3.example.com/thumbnail.jpg");
 
         SliceImpl<PostResponse> result = (SliceImpl<PostResponse>) postService.findPosts(testMember.getId(), 3L, pageable);
 

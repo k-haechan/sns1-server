@@ -6,6 +6,8 @@ import java.time.Instant;
 import org.springframework.stereotype.Service;
 
 import com.mysite.sns1_server.common.util.CookieUtil;
+import com.mysite.sns1_server.domain.member.entity.Member;
+import com.mysite.sns1_server.domain.post.entity.Post;
 import com.mysite.sns1_server.global.aws.s3.service.S3Service;
 import com.mysite.sns1_server.global.config.aws.CloudFrontConfig;
 import com.mysite.sns1_server.global.config.common.ServerConfig;
@@ -73,12 +75,18 @@ public class CloudFrontService {
 			key,
 			value,
 			rootDomain,
-			cookiePath,
+			"/",
 			CloudFrontConfig.VALID_SECONDS
 		);
 	}
 
 	public String getCdnHost(){
 		return cloudFrontConfig.getCdnHost();
+	}
+
+	public String getPostImagePath(Member author, Post post, int idx) {
+		String host = cloudFrontConfig.getCdnHost();
+		String path = s3Service.getPostImagePath(author.getId(),post.getId(), idx);
+		return String.format("%s/%s", host, path);
 	}
 }

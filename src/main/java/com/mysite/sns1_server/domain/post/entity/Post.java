@@ -8,7 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.post.dto.PostRequest;
-import com.mysite.sns1_server.global.aws.s3.service.S3Service;
+import com.mysite.sns1_server.global.aws.cloudfront.service.CloudFrontService;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -70,7 +70,7 @@ public class Post {
 		this.content = request.content();
 	}
 
-	public String getThumbnailUrl(S3Service s3Service) {
-		return s3Service.getPostImagePath(author.getId(),getId(),0);
+	public String getThumbnailUrl(CloudFrontService cloudFrontService) {
+		return cloudFrontService.getPostImagePath(author, this, 0);
 	}
 }
