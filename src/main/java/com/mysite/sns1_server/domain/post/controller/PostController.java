@@ -81,7 +81,7 @@ public class PostController {
 	public CustomResponseBody<PostResponse> updatePost(
 		Principal principal,
 		@PathVariable("post-id") Long postId,
-		PostRequest request
+		@RequestBody @Valid PostRequest request
 	) {
 		Long memberId = Long.valueOf(principal.getName());
 		Post updatedPost = postService.updatePost(memberId, postId, request);

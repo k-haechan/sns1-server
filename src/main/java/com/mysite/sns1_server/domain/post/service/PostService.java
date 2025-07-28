@@ -77,8 +77,6 @@ public class PostService {
 		Post post = postRepository.findById(postId)
 			.orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
-		log.error("memberId : " + memberId);
-		log.error("authorId : " + post.getAuthor().getId());
 		// 2. 요청하는 사람의 정보와 게시물 작성자의 정보가 일치하는지 확인
 		if(!Objects.equals(post.getAuthor().getId(), memberId)) {
 			throw new CustomException(ErrorCode.FORBIDDEN);
