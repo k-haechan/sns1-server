@@ -183,7 +183,7 @@ jobs:
                 "sleep 5",
 
                 "for i in $(seq 1 20); do",
-                "  sleep 1",
+                "  sleep 2",
                 "  RAW_RESPONSE=$(curl -sf http://localhost:$NEXT_PORT/actuator/health || true)",
                 "  echo \"🌀 Raw response: $RAW_RESPONSE\"",
                 "  STATUS=$(echo \"$RAW_RESPONSE\" | grep -o \\\"status\\\":\\\"UP\\\" | cut -d: -f2 | tr -d \\\" || true)",
