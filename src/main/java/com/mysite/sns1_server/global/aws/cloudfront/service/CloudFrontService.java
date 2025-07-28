@@ -86,7 +86,7 @@ public class CloudFrontService {
 
 	public String getPostImagePath(Member author, Post post, int idx) {
 		String host = cloudFrontConfig.getCdnHost();
-		String path = "/" + s3Service.getPostImagePath(author.getId(),post.getId(), idx);
-		return host+path;
+		String path = s3Service.getPostImagePath(author.getId(),post.getId(), idx);
+		return String.format("%s/%s", host, path);
 	}
 }
