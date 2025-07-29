@@ -1,9 +1,18 @@
 package com.mysite.sns1_server.domain.follow.type;
 
+import lombok.Getter;
+
+@Getter
 public enum FollowStatus {
-	REQUESTED, // 팔로우 요청 상태
-	ACCEPTED,  // 팔로우 수락 상태
-	REJECTED;  // 팔로우 거절 상태
+	REQUESTED("REQUESTED"),   // 팔로우 요청 상태
+	ACCEPTED("ACCEPTED"),   // 팔로우 수락 상태
+	REJECTED("REJECTED");   // 팔로우 거절 상태
+
+	private final String value;
+
+	FollowStatus(String value) {
+		this.value = value;
+	}
 
 	public boolean isRequested() {
 		return this == REQUESTED;
