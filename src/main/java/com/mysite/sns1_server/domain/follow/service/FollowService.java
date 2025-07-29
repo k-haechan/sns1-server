@@ -78,6 +78,6 @@ public class FollowService {
 		follow.getFollowing().addFollowing();
 		follow.getFollower().addFollower();
 
-		return FollowResponse.from(followRepository.save(follow));
+		return FollowResponse.from(follow);
 	}
 }
