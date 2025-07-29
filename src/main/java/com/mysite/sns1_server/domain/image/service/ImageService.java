@@ -10,6 +10,7 @@ import com.mysite.sns1_server.domain.image.dto.response.ImageResponse;
 import com.mysite.sns1_server.domain.image.entity.Image;
 import com.mysite.sns1_server.domain.image.repository.ImageRepository;
 import com.mysite.sns1_server.domain.post.entity.Post;
+import com.mysite.sns1_server.global.aws.cloudfront.service.CloudFrontService;
 import com.mysite.sns1_server.global.aws.s3.service.S3Service;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class ImageService {
 
 	private final ImageRepository imageRepository;
 	private final S3Service s3Service;
+	private final CloudFrontService cloudFrontService;
 
 	@Transactional
 	public List<ImageResponse> saveByPost(Post post, int imagesLength) {
@@ -52,9 +54,12 @@ public class ImageService {
 			.toList();
 	}
 
-	// todo: 성능 이슈 시 프로젝션 이용하여 최적화 필요
-	public List<Image> findByPost(Post post) {
-		return imageRepository.findByPost(post);
+	public List<ImageResponse> findByPost(Post post) {
+		String cdnHost = cloudFrontService.getCdnHost();
+		return imageRepository.findByPost(post)
+			.stream()
+			.map(image -> ImageResponse.from(image, cdnHost))
+			.toList();
 	}
 
 	// todo: 성능 이슈 시 조회 대신 조인, 삭제 쿼리로  최적화 필요

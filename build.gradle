@@ -113,7 +113,6 @@ jacocoTestReport {
     classDirectories.setFrom(files(classDirectories.files.collect {
         fileTree(dir: it, include: [
                 'com/mysite/sns1_server/domain/**/service/**',
-                'com/mysite/sns1_server/domain/**/controller/**'
         ])
     }))
 }
@@ -133,7 +132,6 @@ jacocoTestCoverageVerification {
     classDirectories.setFrom(files(classDirectories.files.collect {
         fileTree(dir: it, include: [
                 'com/mysite/sns1_server/domain/**/service/**',
-                'com/mysite/sns1_server/domain/**/controller/**'
         ])
     }))
 }

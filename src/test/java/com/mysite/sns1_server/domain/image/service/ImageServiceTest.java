@@ -22,6 +22,7 @@ import com.mysite.sns1_server.domain.image.entity.Image;
 import com.mysite.sns1_server.domain.image.repository.ImageRepository;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.post.entity.Post;
+import com.mysite.sns1_server.global.aws.cloudfront.service.CloudFrontService;
 import com.mysite.sns1_server.global.aws.s3.service.S3Service;
 
 @DisplayName("ImageService 단위 테스트")
@@ -33,6 +34,9 @@ class ImageServiceTest {
 
     @Mock
     private S3Service s3Service;
+
+    @Mock
+    private CloudFrontService cloudFrontService;
 
     @InjectMocks
     private ImageService imageService;
@@ -87,12 +91,13 @@ class ImageServiceTest {
         List<Image> images = Arrays.asList(image1, image2);
 
         when(imageRepository.findByPost(any(Post.class))).thenReturn(images);
+        when(cloudFrontService.getCdnHost()).thenReturn("cdnhost");
 
-        List<Image> result = imageService.findByPost(testPost);
+        List<ImageResponse> result = imageService.findByPost(testPost);
 
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getPath()).isEqualTo("path/to/image1.jpg");
+        assertThat(result.get(0).url()).isEqualTo("cdnhost/path/to/image1.jpg");
         verify(imageRepository, times(1)).findByPost(any(Post.class));
     }
 
