@@ -14,7 +14,7 @@ public record FollowResponse(
 	public static FollowResponse from(Follow follow) {
 		return new FollowResponse(
 			follow.getId(),
-			follow.getStatus().getValue(),
+			follow.getStatus().name(),
 			com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse.from(follow.getFollower()),
 			com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse.from(follow.getFollowing())
 		);

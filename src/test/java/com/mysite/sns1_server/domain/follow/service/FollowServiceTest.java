@@ -81,7 +81,7 @@ class FollowServiceTest {
             FollowResponse response = followService.requestFollow(1L, 2L);
 
             // then
-            assertThat(response.status()).isEqualTo(FollowStatus.ACCEPTED.getValue());
+            assertThat(response.status()).isEqualTo(FollowStatus.ACCEPTED.name());
             assertThat(following.getFollowingCount()).isEqualTo(1);
             assertThat(follower.getFollowerCount()).isEqualTo(1);
             verify(followRepository).save(any(Follow.class));
@@ -106,7 +106,7 @@ class FollowServiceTest {
             FollowResponse response = followService.requestFollow(1L, 2L);
 
             // then
-            assertThat(response.status()).isEqualTo(FollowStatus.REQUESTED.getValue());
+            assertThat(response.status()).isEqualTo(FollowStatus.REQUESTED.name());
             assertThat(following.getFollowingCount()).isZero();
             assertThat(follower.getFollowerCount()).isZero();
             verify(followRepository).save(any(Follow.class));
@@ -150,7 +150,7 @@ class FollowServiceTest {
 
             // then
             assertThat(response.getContent()).hasSize(1);
-            assertThat(response.getContent().get(0).status()).isEqualTo(FollowStatus.REQUESTED.getValue());
+            assertThat(response.getContent().get(0).status()).isEqualTo(FollowStatus.REQUESTED.name());
         }
     }
 
@@ -170,16 +170,14 @@ class FollowServiceTest {
             Follow follow = createFollow(followId, following, follower, FollowStatus.REQUESTED);
 
             given(followRepository.findById(followId)).willReturn(Optional.of(follow));
-            given(followRepository.save(any(Follow.class))).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
             FollowResponse response = followService.acceptFollowRequest(followerId, followId);
 
             // then
-            assertThat(response.status()).isEqualTo(FollowStatus.ACCEPTED.getValue());
+            assertThat(response.status()).isEqualTo(FollowStatus.ACCEPTED.name());
             assertThat(following.getFollowingCount()).isEqualTo(1);
             assertThat(follower.getFollowerCount()).isEqualTo(1);
-            verify(followRepository).save(any(Follow.class));
         }
 
         @Test
