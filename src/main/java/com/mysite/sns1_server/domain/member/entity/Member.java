@@ -6,6 +6,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.mysite.sns1_server.domain.member.dto.request.ModifyRequest;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -64,6 +66,34 @@ public class Member {
 	@Column
 	@Builder.Default
 	private Boolean isSecret = false;
+
+	public Member modify(ModifyRequest request) {
+		this.realName = request.realName();
+		this.introduction = request.introduction();
+		this.isSecret = request.isSecret();
+		return this;
+	}
+
+	public void addFollower() {
+		this.followerCount++;
+	}
+	public void addFollowing() {
+		this.followingCount++;
+	}
+
+	public void removeFollower() {
+		if (this.followerCount > 0) {
+			this.followerCount--;
+		}
+	}
+
+	public void removeFollowing() {
+		if (this.followingCount > 0) {
+			this.followingCount--;
+		}
+	}
+
+
 
 
 	public static Member createActor(Long id) {

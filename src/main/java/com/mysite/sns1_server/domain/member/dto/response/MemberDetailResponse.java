@@ -15,7 +15,9 @@ public record MemberDetailResponse(
 	@JsonProperty("follower_count")
 	Long followerCount,
 	@JsonProperty("following_count")
-	Long followingCount
+	Long followingCount,
+	@JsonProperty("is_secret")
+	Boolean isSecret
 ) {
 	public static MemberDetailResponse from(Member member) {
 				return new MemberDetailResponse(
@@ -25,7 +27,8 @@ public record MemberDetailResponse(
 			member.getProfileImageUrl(),
 			member.getIntroduction(),
 			member.getFollowerCount(),
-			member.getFollowingCount()
+			member.getFollowingCount(),
+			member.getIsSecret()
 		);
 	}
 }
