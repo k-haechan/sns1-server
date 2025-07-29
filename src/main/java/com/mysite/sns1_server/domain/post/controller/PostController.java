@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mysite.sns1_server.domain.image.service.ImageService;
 import com.mysite.sns1_server.domain.post.dto.PostRequest;
 import com.mysite.sns1_server.domain.post.dto.PostResponse;
-import com.mysite.sns1_server.domain.post.entity.Post;
 import com.mysite.sns1_server.domain.post.service.PostService;
 import com.mysite.sns1_server.global.aws.cloudfront.service.CloudFrontService;
 import com.mysite.sns1_server.global.aws.s3.service.S3Service;
@@ -84,9 +83,9 @@ public class PostController {
 		@RequestBody @Valid PostRequest request
 	) {
 		Long memberId = Long.valueOf(principal.getName());
-		Post updatedPost = postService.updatePost(memberId, postId, request);
+		PostResponse updatedPost = postService.updatePost(memberId, postId, request);
 
-		return CustomResponseBody.of("게시물 데이터 수정 완료", PostResponse.from(updatedPost, null));
+		return CustomResponseBody.of("게시물 데이터 수정 완료", updatedPost);
 	}
 
 

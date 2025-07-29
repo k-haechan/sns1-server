@@ -68,7 +68,13 @@ public class MemberService {
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		return MemberDetailResponse.from(member);
+	}
 
+	public MemberBriefResponse getMemberBriefInfo(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+		return MemberBriefResponse.from(member);
 	}
 
 	public MemberBriefResponse searchMemberByUsername(String username) {
@@ -76,5 +82,10 @@ public class MemberService {
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		return MemberBriefResponse.from(member);
+	}
+
+	public Member findById(Long memberId) {
+		return memberRepository.findById(memberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 	}
 }
