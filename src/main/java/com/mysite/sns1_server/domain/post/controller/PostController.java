@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mysite.sns1_server.domain.image.service.ImageService;
 import com.mysite.sns1_server.domain.post.dto.PostRequest;
 import com.mysite.sns1_server.domain.post.dto.PostResponse;
-import com.mysite.sns1_server.domain.post.entity.Post;
 import com.mysite.sns1_server.domain.post.service.PostService;
 import com.mysite.sns1_server.global.aws.cloudfront.service.CloudFrontService;
 import com.mysite.sns1_server.global.aws.s3.service.S3Service;
