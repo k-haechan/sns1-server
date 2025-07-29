@@ -61,7 +61,7 @@ public class MemberController {
 
 	@GetMapping("/{member_id}/posts")
 	@Operation(summary = "회원 게시글 조회", description = "특정 회원의 게시글을 조회합니다.")
-	public CustomResponseBody<Slice<PostResponse>> getMemberPosts(@PathVariable("member_id") Long memberId, @RequestParam(required = false) Long cursorId,
+	public CustomResponseBody<Slice<PostResponse>> getMemberPosts(@PathVariable("member_id") Long memberId, @RequestParam(value = "cursor-id", required = false) Long cursorId,
 		Pageable pageable, HttpServletResponse response) {
 		Slice<PostResponse> result = postService.findPosts(memberId, cursorId, pageable);
 
