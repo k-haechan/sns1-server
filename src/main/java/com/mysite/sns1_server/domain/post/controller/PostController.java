@@ -84,9 +84,9 @@ public class PostController {
 		@RequestBody @Valid PostRequest request
 	) {
 		Long memberId = Long.valueOf(principal.getName());
-		Post updatedPost = postService.updatePost(memberId, postId, request);
+		PostResponse updatedPost = postService.updatePost(memberId, postId, request);
 
-		return CustomResponseBody.of("게시물 데이터 수정 완료", PostResponse.from(updatedPost, null));
+		return CustomResponseBody.of("게시물 데이터 수정 완료", updatedPost);
 	}
 
 
