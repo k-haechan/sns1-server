@@ -44,7 +44,7 @@ public class FollowController {
 	@Operation(summary = "팔로우 요청 수락", description = "특정 팔로우 요청을 수락합니다.")
 	public CustomResponseBody<FollowResponse> acceptFollowRequest(@PathVariable("follow_id") Long followId, Principal principal) {
 		Long memberId = Long.parseLong(principal.getName());
-		FollowResponse result = followService.acceptFollowRequest(followId, memberId);
+		FollowResponse result = followService.acceptFollowRequest(memberId, followId);
 		return CustomResponseBody.of("팔로우 요청 수락이 성공적으로 완료되었습니다.", result);
 	}
 }
