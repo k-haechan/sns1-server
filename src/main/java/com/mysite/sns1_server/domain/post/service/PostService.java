@@ -74,7 +74,7 @@ public class PostService {
 
 		// todo: post.author가 비공개계정이라면 팔로우 관계만 볼 수 있음
 		// 3. 작성자 정보 조회
-		MemberBriefResponse memberBriefInfo = memberService.getMemberBriefInfo(memberId);
+		MemberBriefResponse memberBriefInfo = memberService.getMemberBriefInfo(post.getAuthor().getId());
 
 		// 4. PostResponse 생성
 		return PostResponse.from(post, memberBriefInfo, images);
