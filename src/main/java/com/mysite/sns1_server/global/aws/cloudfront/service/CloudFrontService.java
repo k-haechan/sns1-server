@@ -48,7 +48,7 @@ public class CloudFrontService {
 			.resourceUrlPattern(resourcePattern)
 			.privateKey(privateKey)
 			.keyPairId(keyPairId)
-			.activeDate(Instant.now())
+			.activeDate(Instant.now().minusSeconds(10))
 			.expirationDate(Instant.now().plusSeconds(CloudFrontConfig.VALID_SECONDS))
 			.ipRange("0.0.0.0/0")
 			.build();
