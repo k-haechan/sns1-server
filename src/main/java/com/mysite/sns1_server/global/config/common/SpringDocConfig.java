@@ -21,15 +21,12 @@ public class SpringDocConfig {
 
 	@Bean
 	public OpenAPI customOpenAPI() {
-		io.swagger.v3.oas.models.servers.Server server = new Server();
+		Server server;
 
 		if ("prod".equals(activeProfile)) {
-			server.url("https://api.sns1.haechan.site");
-			server.setUrl("https://api.sns1.haechan.site");
-			server.setDescription("배포 서버");
+			server = new Server().url("https://api.sns1.haechan.site").description("배포 서버");
 		} else {
-			server.setUrl("http://localhost:8080");
-			server.setDescription("로컬 개발 서버");
+			server = new Server().url("http://localhost:8080").description("로컬 개발 서버");
 		}
 
 		return new OpenAPI()
