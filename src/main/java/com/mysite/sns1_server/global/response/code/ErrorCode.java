@@ -35,7 +35,10 @@ public enum ErrorCode {
 	// Post Errors
 	POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스에 접근할 수 없습니다."),
-	;
+
+	// Follow Errors
+	FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 팔로우 요청입니다." ),
+	INVALID_FOLLOW_STATUS(HttpStatus.BAD_REQUEST, "유효하지 않은 팔로우 요청입니다." ),;
 
 
 	private final HttpStatus status;

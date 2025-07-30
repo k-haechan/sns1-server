@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mysite.sns1_server.domain.auth.dto.request.LoginRequest;
 import com.mysite.sns1_server.domain.member.dto.request.JoinRequest;
+import com.mysite.sns1_server.domain.member.dto.request.ModifyRequest;
 import com.mysite.sns1_server.domain.member.dto.response.MemberBriefResponse;
 import com.mysite.sns1_server.domain.member.dto.response.MemberDetailResponse;
 import com.mysite.sns1_server.domain.member.entity.Member;
@@ -16,6 +17,7 @@ import com.mysite.sns1_server.global.cache.RedisService;
 import com.mysite.sns1_server.global.exception.CustomException;
 import com.mysite.sns1_server.global.response.code.ErrorCode;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -87,5 +89,14 @@ public class MemberService {
 	public Member findById(Long memberId) {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+	}
+
+	@Transactional
+	public MemberDetailResponse updateMemberInfo(Long memberId, @Valid ModifyRequest request) {
+		Member member = memberRepository.findById(memberId).orElseThrow(
+			() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)
+		);
+		Member modified = member.modify(request);
+		return MemberDetailResponse.from(modified);
 	}
 }
