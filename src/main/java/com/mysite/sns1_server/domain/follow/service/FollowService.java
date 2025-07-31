@@ -190,8 +190,6 @@ public class FollowService {
 		Follow follow = followRepository.findFollowByFollowerAndFollowing(follower,
 			following).orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
 
-		follow.setStatus(FollowStatus.NONE);
-
 		follow.getFollowing().removeFollowing();
 		follow.getFollower().removeFollower();
 
