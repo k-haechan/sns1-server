@@ -383,4 +383,194 @@ class FollowServiceTest {
             assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
         }
     }
+
+    @Nested
+    @DisplayName("팔로우 관계 확인")
+    class IsFollow {
+
+        @Test
+        @DisplayName("성공 - 팔로우 관계 없음")
+        void isFollowSuccessNone() {
+            // given
+            Principal principal = createPrincipal(1L);
+            Member following = createMember(1L, false);
+            Member follower = createMember(2L, false);
+
+            given(memberRepository.findById(1L)).willReturn(Optional.of(following));
+            given(memberRepository.findById(2L)).willReturn(Optional.of(follower));
+            given(followRepository.findStatusByFollowerAndFollowing(follower, following)).willReturn(null);
+
+            // when
+            String status = followService.isFollow(principal, 2L);
+
+            // then
+            assertThat(status).isEqualTo("NONE");
+        }
+
+        @Test
+        @DisplayName("성공 - 팔로우 요청 중")
+        void isFollowSuccessRequested() {
+            // given
+            Principal principal = createPrincipal(1L);
+            Member following = createMember(1L, false);
+            Member follower = createMember(2L, false);
+
+            given(memberRepository.findById(1L)).willReturn(Optional.of(following));
+            given(memberRepository.findById(2L)).willReturn(Optional.of(follower));
+            given(followRepository.findStatusByFollowerAndFollowing(follower, following)).willReturn(FollowStatus.REQUESTED);
+
+            // when
+            String status = followService.isFollow(principal, 2L);
+
+            // then
+            assertThat(status).isEqualTo("REQUESTED");
+        }
+
+        @Test
+        @DisplayName("성공 - 팔로우 수락됨")
+        void isFollowSuccessAccepted() {
+            // given
+            Principal principal = createPrincipal(1L);
+            Member following = createMember(1L, false);
+            Member follower = createMember(2L, false);
+
+            given(memberRepository.findById(1L)).willReturn(Optional.of(following));
+            given(memberRepository.findById(2L)).willReturn(Optional.of(follower));
+            given(followRepository.findStatusByFollowerAndFollowing(follower, following)).willReturn(FollowStatus.ACCEPTED);
+
+            // when
+            String status = followService.isFollow(principal, 2L);
+
+            // then
+            assertThat(status).isEqualTo("ACCEPTED");
+        }
+    }
+
+    @Nested
+    @DisplayName("팔로우 요청 거절")
+    class RejectFollowRequest {
+
+        @Test
+        @DisplayName("성공")
+        void rejectFollowRequestSuccess() {
+            // given
+            Long followerId = 1L;
+            Long followId = 10L;
+            Principal principal = createPrincipal(followerId);
+
+            Member follower = createMember(followerId, false);
+            Member following = createMember(2L, false);
+            Follow follow = createFollow(followId, following, follower, FollowStatus.REQUESTED);
+
+            given(followRepository.findById(followId)).willReturn(Optional.of(follow));
+
+            // when
+            String result = followService.rejectFollowRequest(principal, followId);
+
+            // then
+            assertThat(result).isEqualTo("NONE");
+            verify(followRepository).delete(follow);
+        }
+
+        @Test
+        @DisplayName("실패 - 팔로우 정보를 찾을 수 없음")
+        void rejectFollowRequestFailFollowNotFound() {
+            // given
+            Principal principal = createPrincipal(1L);
+            given(followRepository.findById(10L)).willReturn(Optional.empty());
+
+            // when & then
+            CustomException exception = assertThrows(CustomException.class,
+                    () -> followService.rejectFollowRequest(principal, 10L));
+            assertEquals(ErrorCode.FOLLOW_NOT_FOUND, exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("실패 - 권한 없음")
+        void rejectFollowRequestFailForbidden() {
+            // given
+            Long wrongFollowerId = 99L;
+            Long followerId = 1L;
+            Long followId = 10L;
+            Principal principal = createPrincipal(wrongFollowerId);
+
+            Member follower = createMember(followerId, false);
+            Member following = createMember(2L, false);
+            Follow follow = createFollow(followId, following, follower, FollowStatus.REQUESTED);
+
+            given(followRepository.findById(followId)).willReturn(Optional.of(follow));
+
+            // when & then
+            CustomException exception = assertThrows(CustomException.class,
+                    () -> followService.rejectFollowRequest(principal, followId));
+            assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("실패 - 유효하지 않은 팔로우 상태")
+        void rejectFollowRequestFailInvalidStatus() {
+            // given
+            Long followerId = 1L;
+            Long followId = 10L;
+            Principal principal = createPrincipal(followerId);
+
+            Member follower = createMember(followerId, false);
+            Member following = createMember(2L, false);
+            Follow follow = createFollow(followId, following, follower, FollowStatus.ACCEPTED);
+
+            given(followRepository.findById(followId)).willReturn(Optional.of(follow));
+
+            // when & then
+            CustomException exception = assertThrows(CustomException.class,
+                    () -> followService.rejectFollowRequest(principal, followId));
+            assertEquals(ErrorCode.INVALID_FOLLOW_STATUS, exception.getErrorCode());
+        }
+    }
+
+    @Nested
+    @DisplayName("팔로우 취소")
+    class CancelFollow {
+
+        @Test
+        @DisplayName("성공")
+        void cancelFollowSuccess() {
+            // given
+            Long followingId = 1L;
+            Long followerId = 2L;
+            Principal principal = createPrincipal(followingId);
+
+            Member following = createMember(followingId, false);
+            Member follower = createMember(followerId, false);
+            Follow follow = createFollow(1L, following, follower, FollowStatus.ACCEPTED);
+
+            given(followRepository.findFollowByFollowerAndFollowing(any(Member.class), any(Member.class)))
+                    .willReturn(Optional.of(follow));
+
+            // when
+            String result = followService.cancelFollow(principal, followerId);
+
+            // then
+            assertThat(result).isEqualTo("NONE");
+            verify(followRepository).delete(follow);
+            assertThat(following.getFollowingCount()).isZero();
+            assertThat(follower.getFollowerCount()).isZero();
+        }
+
+        @Test
+        @DisplayName("실패 - 팔로우 관계를 찾을 수 없음")
+        void cancelFollowFailFollowNotFound() {
+            // given
+            Long followingId = 1L;
+            Long followerId = 2L;
+            Principal principal = createPrincipal(followingId);
+
+            given(followRepository.findFollowByFollowerAndFollowing(any(Member.class), any(Member.class)))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            CustomException exception = assertThrows(CustomException.class,
+                    () -> followService.cancelFollow(principal, followerId));
+            assertEquals(ErrorCode.FOLLOW_NOT_FOUND, exception.getErrorCode());
+        }
+    }
 }
