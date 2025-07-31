@@ -158,4 +158,6 @@ public class PostService {
 		// 4. Post 삭제
 		postRepository.deleteById(postId);
 	}
+
+	// 게시물 댓글 달기
 }
