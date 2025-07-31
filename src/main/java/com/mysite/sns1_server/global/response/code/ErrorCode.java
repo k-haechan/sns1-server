@@ -38,7 +38,9 @@ public enum ErrorCode {
 
 	// Follow Errors
 	FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 팔로우 요청입니다." ),
-	INVALID_FOLLOW_STATUS(HttpStatus.BAD_REQUEST, "유효하지 않은 팔로우 요청입니다." ),;
+	INVALID_FOLLOW_STATUS(HttpStatus.BAD_REQUEST, "유효하지 않은 팔로우 요청입니다." ),
+	ALREADY_REQUESTED(HttpStatus.BAD_REQUEST, "이미 팔로우 요청을 보냈습니다." ),
+	ALREADY_FOLLOWING(HttpStatus.BAD_REQUEST, "이미 팔로우 관계 입니다." ),;
 
 
 	private final HttpStatus status;
