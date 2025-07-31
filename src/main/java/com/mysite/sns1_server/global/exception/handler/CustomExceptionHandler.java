@@ -23,7 +23,7 @@ public class CustomExceptionHandler {
 	public ResponseEntity<CustomResponseBody<Void>> handleCustomException(CustomException e) {
 		ErrorCode errorCode = e.getErrorCode();
 		return ResponseEntity.status(errorCode.getStatus())
-			.body(CustomResponseBody.of(errorCode.getMessage()));
+			.body(CustomResponseBody.of(e.getMessage()));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

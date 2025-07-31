@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum FollowStatus {
 	REQUESTED,   // 팔로우 요청 상태
-	ACCEPTED,   // 팔로우 수락 상태
-	REJECTED;   // 팔로우 거절 상태
+	ACCEPTED,    // 팔로우 수락 상태
+	NONE;        // 팔로우 없음 상태
 
 
 	public boolean isRequested() {
@@ -17,7 +17,7 @@ public enum FollowStatus {
 		return this == ACCEPTED;
 	}
 
-	public boolean isRejected() {
-		return this == REJECTED;
+	public boolean isNone() {
+		return this == NONE;
 	}
 }
