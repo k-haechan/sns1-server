@@ -2,6 +2,8 @@ package com.mysite.sns1_server.domain.post.controller;
 
 import java.security.Principal;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mysite.sns1_server.domain.comment.dto.request.CommentRequest;
+import com.mysite.sns1_server.domain.comment.dto.response.CommentResponse;
+import com.mysite.sns1_server.domain.comment.service.CommentService;
 import com.mysite.sns1_server.domain.image.service.ImageService;
 import com.mysite.sns1_server.domain.post.dto.PostRequest;
 import com.mysite.sns1_server.domain.post.dto.PostResponse;
@@ -38,6 +43,7 @@ public class PostController {
 	private final ImageService imageService;
 	private final CloudFrontService cloudFrontService;
 	private final S3Service s3Service;
+	private final CommentService commentService;
 
 	/* 게시물 업로드 */
 	@PostMapping
@@ -101,6 +107,55 @@ public class PostController {
 		postService.deletePost(memberId, postId);
 
 		return CustomResponseBody.of("게시물 데이터 삭제 완료", null);
+	}
+
+	/* 게시물 댓글 생성 */
+	@PostMapping("/{post-id}/comments")
+	@Operation(summary = "게시물 댓글 생성", description = "게시물에 댓글을 생성합니다.")
+	@ResponseStatus(HttpStatus.CREATED)
+	public CustomResponseBody<CommentResponse> createComment(
+		Principal principal,
+		@PathVariable("post-id") Long postId,
+		@RequestBody @Valid CommentRequest request
+	) {
+		CommentResponse result = commentService.createComment(principal, postId, request);
+		return CustomResponseBody.of("댓글이 성공적으로 생성되었습니다.", result);
+	}
+
+	/* 게시물 댓글 조회 */
+	@GetMapping("/{post-id}/comments")
+	@Operation(summary = "게시물 댓글 조회", description = "게시물의 댓글을 조회합니다.")
+	public CustomResponseBody<Slice<CommentResponse>> getComments(
+		Principal principal,
+		@PathVariable("post-id") Long postId,
+		Pageable pageable
+	) {
+		Slice<CommentResponse> comments = commentService.getComments(principal, postId, pageable);
+		return CustomResponseBody.of("댓글 조회가 성공적으로 완료되었습니다.", comments);
+	}
+
+	/* 게시물 댓글 수정 */
+	@PutMapping("/comments/{comment-id}")
+	@Operation(summary = "게시물 댓글 수정", description = "게시물의 댓글을 수정합니다.")
+	public CustomResponseBody<CommentResponse> updateComment(
+		Principal principal,
+		@PathVariable("comment-id") Long commentId,
+		@RequestBody @Valid CommentRequest request
+	) {
+		CommentResponse updatedComment = commentService.updateComment(principal, commentId, request);
+		return CustomResponseBody.of("댓글이 성공적으로 수정되었습니다.", updatedComment);
+	}
+
+	/* 게시물 댓글 삭제 */
+	@DeleteMapping("/comments/{comment-id}")
+	@Operation(summary = "게시물 댓글 삭제", description = "게시물의 댓글을 삭제합니다.")
+	@ResponseStatus(HttpStatus.OK)
+	public CustomResponseBody<String> deleteComment(
+		Principal principal,
+		@PathVariable("comment-id") Long commentId
+	) {
+		commentService.deleteComment(principal, commentId);
+		return CustomResponseBody.of("댓글이 성공적으로 삭제되었습니다.", null);
 	}
 
 }
