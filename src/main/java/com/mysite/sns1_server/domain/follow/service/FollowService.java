@@ -14,6 +14,8 @@ import com.mysite.sns1_server.domain.follow.repository.FollowRepository;
 import com.mysite.sns1_server.domain.follow.type.FollowStatus;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
+import com.mysite.sns1_server.domain.notification.service.NotificationService;
+import com.mysite.sns1_server.domain.notification.type.NotificationType;
 import com.mysite.sns1_server.global.exception.CustomException;
 import com.mysite.sns1_server.global.response.code.ErrorCode;
 
@@ -27,6 +29,7 @@ public class FollowService {
 
 	private final MemberRepository memberRepository;
 	private final FollowRepository followRepository;
+	private final NotificationService notificationService;
 
 	// 팔로우 요청
 	@Transactional
@@ -55,10 +58,12 @@ public class FollowService {
 
 		if (Boolean.TRUE.equals(follower.getIsSecret())) {
 			follow.setStatus(FollowStatus.REQUESTED); // 비공개 계정인 경우 팔로우 요청 상태로 설정
+			notificationService.createNotification(follower, NotificationType.FOLLOW_REQUEST, following.getUsername(), followingId);
 		} else {
 			follow.setStatus(FollowStatus.ACCEPTED);
 			following.addFollowing();
 			follower.addFollower();
+			notificationService.createNotification(follower, NotificationType.FOLLOWED, following.getUsername(), followingId);
 		}
 		Follow savedFollow = followRepository.save(follow);
 
@@ -93,6 +98,9 @@ public class FollowService {
 		follow.setStatus(FollowStatus.ACCEPTED);
 		follow.getFollowing().addFollowing();
 		follow.getFollower().addFollower();
+
+		notificationService
+			.createNotification(Member.createActor(followerId), NotificationType.FOLLOW_ACCEPTED, follow.getFollower().getUsername(), followId);
 
 		return FollowResponse.from(follow);
 	}
