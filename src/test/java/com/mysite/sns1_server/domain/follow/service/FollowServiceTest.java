@@ -28,6 +28,7 @@ import com.mysite.sns1_server.domain.follow.repository.FollowRepository;
 import com.mysite.sns1_server.domain.follow.type.FollowStatus;
 import com.mysite.sns1_server.domain.member.entity.Member;
 import com.mysite.sns1_server.domain.member.repository.MemberRepository;
+import com.mysite.sns1_server.domain.notification.service.NotificationService;
 import com.mysite.sns1_server.global.exception.CustomException;
 import com.mysite.sns1_server.global.response.code.ErrorCode;
 
@@ -43,15 +44,20 @@ class FollowServiceTest {
     @Mock
     private FollowRepository followRepository;
 
+    @Mock
+    private NotificationService notificationService;
+
     private Principal createPrincipal(Long memberId) {
         return () -> String.valueOf(memberId);
     }
 
     private Member createMember(Long id, boolean isSecret) {
-        Member member = Member.builder().isSecret(isSecret).build();
+        Member member = Member.builder()
+            .isSecret(isSecret)
+            .followerCount(0L)
+            .followingCount(0L)
+            .build();
         ReflectionTestUtils.setField(member, "id", id);
-        ReflectionTestUtils.setField(member, "followerCount", 0L);
-        ReflectionTestUtils.setField(member, "followingCount", 0L);
         return member;
     }
 
