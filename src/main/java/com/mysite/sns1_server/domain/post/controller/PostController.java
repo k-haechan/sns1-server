@@ -18,12 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mysite.sns1_server.domain.comment.dto.request.CommentRequest;
 import com.mysite.sns1_server.domain.comment.dto.response.CommentResponse;
 import com.mysite.sns1_server.domain.comment.service.CommentService;
-import com.mysite.sns1_server.domain.image.service.ImageService;
 import com.mysite.sns1_server.domain.post.dto.PostRequest;
 import com.mysite.sns1_server.domain.post.dto.PostResponse;
 import com.mysite.sns1_server.domain.post.service.PostService;
 import com.mysite.sns1_server.global.aws.cloudfront.service.CloudFrontService;
-import com.mysite.sns1_server.global.aws.s3.service.S3Service;
 import com.mysite.sns1_server.global.response.CustomResponseBody;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,9 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Post", description = "게시물 관련 API")
 public class PostController {
 	private final PostService postService;
-	private final ImageService imageService;
 	private final CloudFrontService cloudFrontService;
-	private final S3Service s3Service;
 	private final CommentService commentService;
 
 	/* 게시물 업로드 */
