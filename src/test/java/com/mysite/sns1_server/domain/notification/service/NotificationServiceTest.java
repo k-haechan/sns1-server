@@ -21,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.mysite.sns1_server.domain.member.entity.Member;
@@ -30,6 +29,9 @@ import com.mysite.sns1_server.domain.notification.dto.response.NotificationRespo
 import com.mysite.sns1_server.domain.notification.entity.Notification;
 import com.mysite.sns1_server.domain.notification.repository.NotificationRepository;
 import com.mysite.sns1_server.domain.notification.type.NotificationType;
+import com.mysite.sns1_server.global.exception.CustomException;
+import com.mysite.sns1_server.global.response.code.ErrorCode;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -85,15 +87,11 @@ class NotificationServiceTest {
             given(sseEmitterManager.getEmitter(String.valueOf(member.getId()))).willReturn(Optional.of(mockSseEmitter));
 
             // when
-            NotificationResponse response = notificationService.createNotification(member, type, subUsername, subId);
+            notificationService.createNotification(member, type, subUsername, subId);
 
             // then
-            assertThat(response.notificationId()).isEqualTo(notification.getId());
-            assertThat(response.message()).isEqualTo(notification.getMessage());
-            assertThat(response.isRead()).isFalse(); // 생성 시점에는 false
             verify(notificationRepository).save(any(Notification.class));
-            verify(mockSseEmitter).send(notificationCaptor.capture()); // SSE 전송 확인
-            assertThat(notificationCaptor.getValue().getId()).isEqualTo(notification.getId());
+            verify(mockSseEmitter).send(any(NotificationResponse.class)); // SSE 전송 확인
         }
 
         @Test
@@ -111,15 +109,11 @@ class NotificationServiceTest {
             given(sseEmitterManager.getEmitter(String.valueOf(member.getId()))).willReturn(Optional.empty());
 
             // when
-            NotificationResponse response = notificationService.createNotification(member, type, subUsername, subId);
+            notificationService.createNotification(member, type, subUsername, subId);
 
             // then
-            assertThat(response.notificationId()).isEqualTo(notification.getId());
-            assertThat(response.message()).isEqualTo(notification.getMessage());
-            assertThat(response.isRead()).isFalse();
             verify(notificationRepository).save(any(Notification.class));
             verify(sseEmitterManager).getEmitter(String.valueOf(member.getId())); // Emitter 조회 시도 확인
-            // mockSseEmitter.send()는 호출되지 않음을 암시적으로 확인 (verify(mockSseEmitter, never()).send(any()))
         }
     }
 
@@ -202,6 +196,40 @@ class NotificationServiceTest {
 
             // then
             assertThat(response.getContent()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("알림 삭제")
+    class DeleteNotification {
+
+        @Test
+        @DisplayName("성공")
+        void deleteNotificationSuccess() {
+            // given
+            Long notificationId = 1L;
+            Notification notification = createNotification(notificationId, createMember(1L), NotificationType.FOLLOWED, "userA", 10L, false);
+
+            given(notificationRepository.findById(notificationId)).willReturn(Optional.of(notification));
+
+            // when
+            notificationService.deleteNotification(notificationId);
+
+            // then
+            verify(notificationRepository).delete(notification);
+        }
+
+        @Test
+        @DisplayName("실패 - 알림을 찾을 수 없음")
+        void deleteNotificationFailNotFound() {
+            // given
+            Long notificationId = 1L;
+            given(notificationRepository.findById(notificationId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> notificationService.deleteNotification(notificationId))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOTIFICATION_NOT_FOUND);
         }
     }
 }

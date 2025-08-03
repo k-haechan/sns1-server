@@ -43,7 +43,10 @@ public enum ErrorCode {
 	ALREADY_FOLLOWING(HttpStatus.BAD_REQUEST, "이미 팔로우 관계 입니다." ),
 
 	// Comment Errors
-	COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다." ),;
+	COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다." ),
+
+	// Notification Errors
+	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다." ),;
 
 
 	private final HttpStatus status;

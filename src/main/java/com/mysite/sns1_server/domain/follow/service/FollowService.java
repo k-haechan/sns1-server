@@ -58,14 +58,20 @@ public class FollowService {
 
 		if (Boolean.TRUE.equals(follower.getIsSecret())) {
 			follow.setStatus(FollowStatus.REQUESTED); // 비공개 계정인 경우 팔로우 요청 상태로 설정
-			notificationService.createNotification(follower, NotificationType.FOLLOW_REQUEST, following.getUsername(), followingId);
 		} else {
 			follow.setStatus(FollowStatus.ACCEPTED);
 			following.addFollowing();
 			follower.addFollower();
-			notificationService.createNotification(follower, NotificationType.FOLLOWED, following.getUsername(), followingId);
 		}
 		Follow savedFollow = followRepository.save(follow);
+
+		if (savedFollow.getStatus() == FollowStatus.REQUESTED) {
+			// 비공개 계정인 경우 팔로우 요청 알림을 보냄
+			notificationService.createNotification(follower, NotificationType.FOLLOW_REQUEST, following.getUsername(), followingId);
+		} else {
+			// 공개 계정인 경우 팔로우 알림을 보냄
+			notificationService.createNotification(follower, NotificationType.FOLLOWED, following.getUsername(), followingId);
+		}
 
 		return FollowResponse.from(savedFollow);
 	}
@@ -80,7 +86,7 @@ public class FollowService {
 
 	// 팔로우 요청 수락
 	@Transactional
-	public FollowResponse acceptFollowRequest(Principal principal, Long followId) {
+	public FollowResponse acceptFollowRequest(Principal principal, Long followId, Long notificationId) {
 		Follow follow = followRepository.findById(followId)
 			.orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
 
@@ -99,8 +105,11 @@ public class FollowService {
 		follow.getFollowing().addFollowing();
 		follow.getFollower().addFollower();
 
+		notificationService.deleteNotification(notificationId);
+		notificationService.createNotification(Member.createActor(followerId), NotificationType.FOLLOWED, follow.getFollowing().getUsername(), follow.getFollowing().getId());
+
 		notificationService
-			.createNotification(Member.createActor(followerId), NotificationType.FOLLOW_ACCEPTED, follow.getFollower().getUsername(), followId);
+			.createNotification(follow.getFollowing(), NotificationType.FOLLOW_ACCEPTED, follow.getFollower().getUsername(), followerId);
 
 		return FollowResponse.from(follow);
 	}
@@ -113,11 +122,12 @@ public class FollowService {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-		// 비밀 계정인 경우 본인이 아니라면 403 Forbidden
+		// 비밀 계정인 경우 본인이 아니거나 팔로워가 아니라면 403 Forbidden
 		if (Boolean.TRUE.equals(member.getIsSecret())) {
-			//
 			if (!Objects.equals(Long.parseLong(principal.getName()), memberId)) {
-				throw new CustomException(ErrorCode.FORBIDDEN);
+				if(!isFollow(principal, memberId).equals(FollowStatus.ACCEPTED.name())){
+					throw new CustomException(ErrorCode.FORBIDDEN);
+				}
 			}
 		}
 
@@ -138,7 +148,9 @@ public class FollowService {
 		// 비밀 계정인 경우 본인이 아니라면 403 Forbidden
 		if (Boolean.TRUE.equals(member.getIsSecret())) {
 			if (!Objects.equals(Long.parseLong(principal.getName()), memberId)) {
-				throw new CustomException(ErrorCode.FORBIDDEN);
+				if(!isFollow(principal, memberId).equals(FollowStatus.ACCEPTED.name())){
+					throw new CustomException(ErrorCode.FORBIDDEN);
+				}
 			}
 		}
 
@@ -170,7 +182,7 @@ public class FollowService {
 		}
 	}
 
-	public String rejectFollowRequest(Principal principal, Long followId) {
+	public String rejectFollowRequest(Principal principal, Long followId, Long notificationId) {
 		Follow follow = followRepository.findById(followId)
 			.orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
 
@@ -183,13 +195,35 @@ public class FollowService {
 		if (follow.getStatus() != FollowStatus.REQUESTED) {
 			throw new CustomException(ErrorCode.INVALID_FOLLOW_STATUS);
 		}
-
+		notificationService.deleteNotification(notificationId);
 		followRepository.delete(follow);
 		return "NONE";
 	}
 
+	// 팔로우 요청 취소
+	public String cancelFollowRequest(Principal principal, Long followId) {
+		Long followingId = Long.parseLong(principal.getName());
+
+		Follow follow = followRepository.findById(followId)
+			.orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
+
+		if (!Objects.equals(follow.getFollowing().getId(), followingId)) {
+			throw new CustomException(ErrorCode.FORBIDDEN, "팔로우 취소는 본인만 할 수 있습니다.");
+		}
+
+
+		if (follow.getStatus() == FollowStatus.REQUESTED) {
+			followRepository.delete(follow);
+			return "NONE";
+		} else {
+			throw new CustomException(ErrorCode.INVALID_FOLLOW_STATUS);
+		}
+	}
+
+
+
 	@Transactional
-	public String cancelFollow(Principal principal, Long followerId) {
+	public String unFollow(Principal principal, Long followerId) {
 		Long followingId = Long.parseLong(principal.getName());
 
 		Member following = Member.createActor(followingId);
@@ -204,5 +238,20 @@ public class FollowService {
 		followRepository.delete(follow);
 
 		return "NONE";
+	}
+
+	@Transactional
+	public FollowResponse findMyFollowRequestWithFollowingId(Principal principal, Long followingId) {
+		Long followerId = Long.parseLong(principal.getName());
+		Member follower = memberRepository.findById(followerId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND, "Follower member not found with ID: " + followerId));
+
+		Member following = memberRepository.findById(followingId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND, "Following member not found with ID: " + followingId));
+
+		Follow follow = followRepository.findFollowByFollowerAndFollowing(follower, following)
+			.orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND, "Follow relationship not found between follower and following"));
+
+		return FollowResponse.from(follow);
 	}
 }

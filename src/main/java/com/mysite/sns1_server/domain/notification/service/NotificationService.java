@@ -13,6 +13,8 @@ import com.mysite.sns1_server.domain.notification.dto.response.NotificationRespo
 import com.mysite.sns1_server.domain.notification.entity.Notification;
 import com.mysite.sns1_server.domain.notification.repository.NotificationRepository;
 import com.mysite.sns1_server.domain.notification.type.NotificationType;
+import com.mysite.sns1_server.global.exception.CustomException;
+import com.mysite.sns1_server.global.response.code.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,25 +25,24 @@ public class NotificationService {
 	private final SseEmitterManager sseEmitterManager;
 
 	// 알림 생성 메서드
-	public NotificationResponse createNotification(Member member, NotificationType type, String subUsername, Long subId) {
+	public void createNotification(Member member, NotificationType type, String subUsername, Long subId) {
 		// 알림 엔티티 생성 및 저장
 		Notification notification = Notification.create(member, type, subUsername, subId);
+		Notification save = notificationRepository.save(notification);
+
+		NotificationResponse notificationResponse = NotificationResponse.from(save);
 
 		// SSE를 통해 클라이언트에게 알림 전송
 		sseEmitterManager.getEmitter(String.valueOf(member.getId()))
 			.ifPresent(emitter -> {
 				try {
 					// SSE를 통해 클라이언트에게 알림 전송
-					emitter.send(notification);
+					emitter.send(notificationResponse);
 				} catch (Exception e) {
 					// 예외 처리 로직 (예: 로그 기록)
 					e.printStackTrace();
 				}
 			});
-
-		Notification save = notificationRepository.save(notification);
-
-		return NotificationResponse.from(save);
 
 	}
 
@@ -69,6 +70,13 @@ public class NotificationService {
 		}
 
 		return response; // 미리 생성해둔 DTO를 반환
+	}
+
+	@Transactional
+	public void deleteNotification(Long notificationId) {
+		Notification notification = notificationRepository.findById(notificationId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+		notificationRepository.delete(notification);
 	}
 
 }
