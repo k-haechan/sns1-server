@@ -46,12 +46,15 @@ public class CommentService {
 		Comment savedComment = commentRepository.save(comment);
 
 		// 4. 알림 생성
-		notificationService.createNotification(
-			post.getAuthor(),
-			NotificationType.COMMENT,
-			author.getUsername(),
-			post.getId()
-		);
+		// 게시물 작성자와 댓글 작성자가 다른 경우에만 알림을 생성합니다.
+		if (!post.getAuthor().getId().equals(author.getId())) {
+			notificationService.createNotification(
+				post.getAuthor(),
+				NotificationType.COMMENT,
+				author.getUsername(),
+				post.getId()
+			);
+		}
 
 		// 4. Comment 응답 정보 생성
 		return CommentResponse.from(savedComment);
