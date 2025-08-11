@@ -12,6 +12,9 @@ import com.mysite.sns1_server.domain.comment.dto.response.CommentResponse;
 import com.mysite.sns1_server.domain.comment.entity.Comment;
 import com.mysite.sns1_server.domain.comment.repository.CommentRepository;
 import com.mysite.sns1_server.domain.member.entity.Member;
+import com.mysite.sns1_server.domain.member.repository.MemberRepository;
+import com.mysite.sns1_server.domain.notification.service.NotificationService;
+import com.mysite.sns1_server.domain.notification.type.NotificationType;
 import com.mysite.sns1_server.domain.post.entity.Post;
 import com.mysite.sns1_server.domain.post.repository.PostRepository;
 import com.mysite.sns1_server.global.exception.CustomException;
@@ -24,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class CommentService {
 	private final PostRepository postRepository;
 	private final CommentRepository commentRepository;
+	private final NotificationService notificationService;
+	private final MemberRepository memberRepository;
 
 	public CommentResponse createComment(Principal principal, Long postId, CommentRequest request) {
 		// 1. Post 조회
@@ -32,11 +37,24 @@ public class CommentService {
 
 		// 2. Comment 생성
 		Long authorId = Long.parseLong(principal.getName());
-		Member author = Member.createActor(authorId);
+		Member author = memberRepository.findById(authorId).orElseThrow(
+			() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND, "Member not found with ID: " + authorId)
+		);
 		Comment comment = request.toComment(post, author);
 
 		// 3. Comment DB에 저장
 		Comment savedComment = commentRepository.save(comment);
+
+		// 4. 알림 생성
+		// 게시물 작성자와 댓글 작성자가 다른 경우에만 알림을 생성합니다.
+		if (!post.getAuthor().getId().equals(author.getId())) {
+			notificationService.createNotification(
+				post.getAuthor(),
+				NotificationType.COMMENT,
+				author.getUsername(),
+				post.getId()
+			);
+		}
 
 		// 4. Comment 응답 정보 생성
 		return CommentResponse.from(savedComment);

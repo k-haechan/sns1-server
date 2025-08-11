@@ -2,7 +2,7 @@ package com.mysite.sns1_server.domain.comment.service;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 import java.security.Principal;
@@ -27,6 +27,8 @@ import com.mysite.sns1_server.domain.comment.dto.response.CommentResponse;
 import com.mysite.sns1_server.domain.comment.entity.Comment;
 import com.mysite.sns1_server.domain.comment.repository.CommentRepository;
 import com.mysite.sns1_server.domain.member.entity.Member;
+import com.mysite.sns1_server.domain.member.repository.MemberRepository;
+import com.mysite.sns1_server.domain.notification.service.NotificationService;
 import com.mysite.sns1_server.domain.post.entity.Post;
 import com.mysite.sns1_server.domain.post.repository.PostRepository;
 import com.mysite.sns1_server.global.exception.CustomException;
@@ -43,6 +45,12 @@ class CommentServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
+
+    @Mock
+    private MemberRepository memberRepository;
+
+    @Mock
+    private NotificationService notificationService;
 
     private Principal createPrincipal(Long memberId) {
         return () -> String.valueOf(memberId);
@@ -83,6 +91,7 @@ class CommentServiceTest {
             Post post = createPost(postId, author);
             Comment comment = createComment(1L, post, author, request.content());
 
+            given(memberRepository.findById(memberId)).willReturn(Optional.of(author));
             given(postRepository.findById(postId)).willReturn(Optional.of(post));
             given(commentRepository.save(any(Comment.class))).willReturn(comment);
 
