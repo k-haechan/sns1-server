@@ -12,7 +12,7 @@
 - **회원 관리**: 사용자 프로필 조회 및 수정
 
 ## 🏛️ 아키텍처
-
+### 시스템 아키텍처
 ```mermaid
 graph TD
     subgraph Client
@@ -50,6 +50,9 @@ graph TD
 
     Service -.->|Generates & returns Pre-signed URL| ClientApp
 ```
+### ERD
+<img width="2000" height="3043" alt="diagram-export-2025 -8 -17 -오후-9_49_45" src="https://github.com/user-attachments/assets/9f136a4f-96ff-430d-8ef6-2fbff8c337d1" />
+
 
 ## 🛠️ 기술 스택
 
@@ -67,6 +70,8 @@ graph TD
 - **MySQL**: 주요 데이터 저장
 - **H2 Database**: 테스트용 인메모리 데이터베이스
 - **Flyway**: 데이터베이스 스키마 버전 관리
+- **MongoDB**: 채팅 데이터 저장
+- **Redis**: Refresh Token 블랙리스트 관리 및 이메일 인증번호 저장
 
 ### DevOps & Tools
 - **Gradle**: 의존성 관리 및 빌드
